@@ -5,14 +5,16 @@ async function request<TResponse>(
   ): Promise<Awaited<TResponse> | undefined> {
     try {
       const response = await fetch(url, config);
+      const data = await response.json();
+      console.log('request response data-', data);  // debug
       if (response.status === 200) {
-        return await response.json();
+        return data;
         }
-        else throw `Response error. Status ${response.status}.`;
+        else throw new Error(`Response error. Status ${response.status}`);
     }
     catch (error) {
       console.error(error);
-
+      throw error;
     }
 };
 
@@ -21,14 +23,14 @@ export const api = {
     get: <TResponse>(url: string) => 
         request<TResponse>(url),
 
-    get_credentials: <TResponse>(url: string) => 
-        request<TResponse>(url, {
-            method: 'GET',
-            credentials: 'include', // include cookies
-        }),
-
     post: <TBody extends BodyInit, TResponse>(url: string, body: TBody) => 
         request<TResponse>(url, { method: 'POST', body }),
+
+    put: <TBody extends BodyInit, TResponse>(url: string, body: TBody) =>
+        request<TResponse>(url, { method: 'PUT', body }),
+
+    delete: <TResponse>(url: string) =>
+        request<TResponse>(url, { method: 'DELETE' }),
 
     post_credentials: <TBody extends BodyInit, TResponse>(url: string, body: TBody) => 
         request<TResponse>(url, { 
@@ -36,4 +38,11 @@ export const api = {
           body,
           credentials: 'include',  // include cookies
           }),
+    
+    get_credentials: <TResponse>(url: string) => 
+      request<TResponse>(url, {
+          method: 'GET',
+          credentials: 'include', // include cookies
+      }),
+    
 };
