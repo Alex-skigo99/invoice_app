@@ -130,5 +130,8 @@ dist
 .pnp.*
 
 # react build
-client/build
-client/dist
+/client/build
+/client/dist
+
+# node js build
+/build
