@@ -26,8 +26,8 @@ export const api = {
     post: <TBody extends BodyInit, TResponse>(url: string, body: TBody) => 
         request<TResponse>(url, { method: 'POST', body }),
 
-    put: <TBody extends BodyInit, TResponse>(url: string, body: TBody) =>
-        request<TResponse>(url, { method: 'PUT', body }),
+    patch: <TBody extends BodyInit, TResponse>(url: string, body: TBody) =>
+        request<TResponse>(url, { method: 'PATCH', body }),
 
     delete: <TResponse>(url: string) =>
         request<TResponse>(url, { method: 'DELETE' }),

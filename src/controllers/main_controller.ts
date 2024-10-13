@@ -2,25 +2,22 @@ import { Request, Response } from "express";
 import { invoiceModel } from "../models/invoice_model";
     
 export const mainController = {
-    readAll: async (req: Request, res: Response) => {
-        const { status } = req.query;
+    read: async (req: Request, res: Response) => {
         try {
-            const invoices = await invoiceModel.readAll(status as string | undefined);
-            console.log("invoices", invoices); // debug
+            const invoices = await invoiceModel.read(req.query);
             res.status(200).json(invoices);
         }
         catch (error) {
             console.error("An error occurred while reading invoices: ", error);
-            res.status(404).json({message:'Something went wrong!', error: error});
+            res.status(500).json({message:'Something went wrong!', error: error});
         }
     },
 
     create: async (req: Request, res: Response) => {
         const invoice = req.body;
-        console.log("invoice", invoice); // debug
         try {
             const newInvoice = await invoiceModel.create(invoice);
-            res.status(201).json(newInvoice);
+            res.status(200).json(newInvoice);
         }
         catch (error) {
             console.error("An error occurred while creating an invoice: ", error);
@@ -32,7 +29,7 @@ export const mainController = {
         const invoice = req.body;
         try {
             await invoiceModel.update(invoice);
-            res.status(206).json({ message: "Invoice updated" });
+            res.status(200).json({ message: "Invoice updated" });
         }
         catch (error) {
             console.error("An error occurred while updating an invoice: ", error);
@@ -44,7 +41,7 @@ export const mainController = {
         const { dbId } = req.params;
         try {
             await invoiceModel.delete(dbId);
-            res.status(204).json({ message: "Invoice deleted" });
+            res.status(200);
         }
         catch (error) {
             console.error("An error occurred while deleting an invoice: ", error);
