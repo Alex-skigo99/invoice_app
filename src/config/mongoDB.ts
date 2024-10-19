@@ -1,30 +1,24 @@
 import { Db, MongoClient, ServerApiVersion } from 'mongodb';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-const uri = process.env.MONGODB_URI as string;
-const databaseName = "enterprise";
-
-const mongoClient = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-
+export let mongoClient: MongoClient;
 export let db: Db;
 
-(async (dbName: string) => {
+export const connectToDB = async (mongoUri: string,  dbName: string) => {
+  mongoClient = new MongoClient(mongoUri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });  
   try {
     await mongoClient.connect();
     db = mongoClient.db(dbName);
-    console.log("MongoDB connected");
+    console.log("MongoDB connected. Database name: ", db.databaseName);
   } catch (error) {
     console.error("An error occurred while connecting to MongoDB: ", error);
   }
-}) (databaseName);
+};
 
 process.on('SIGINT', function() {
     mongoClient.close();

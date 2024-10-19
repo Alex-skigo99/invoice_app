@@ -17,7 +17,7 @@ export type Item = {
 };
 
 export interface Invoice {
-    "_id": ObjectId;
+    "_id"?: ObjectId;
     "id": string;
     "createdAt": Date,
     "paymentDue": Date,
