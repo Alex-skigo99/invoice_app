@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+// import { ObjectId } from "mongodb";
 
 type Status = "paid" | "pending" | "draft";
 
@@ -17,10 +17,10 @@ export type Item = {
 };
 
 export interface Invoice {
-    "_id"?: ObjectId;
+    // "_id"?: string;
     "id": string;
-    "createdAt": Date,
-    "paymentDue": Date,
+    "createdAt": string,
+    "paymentDue": string,
     "description": string,
     "paymentTerms": number,
     "clientName": string,

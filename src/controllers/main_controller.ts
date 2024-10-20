@@ -16,14 +16,12 @@ export const mainController = {
     update: async (req: Request, res: Response) => {
         const { dbId } = req.params;
         const invoice = req.body; // must be without _id
-        if ('_id' in invoice) delete invoice._id;
         const result = await invoiceModel.update(dbId, invoice);
         if (result.matchedCount === 0) {
             res.status(404).json({ message: "Invoice not found" });
         } else {
-            res.status(200).json(result);
+            res.status(200).json(result); // return { acknowledged: true, matchedCount: 1, modifiedCount: n, upsertedId: null,  }
         }
-
         res.status(200);
     },
 

@@ -12,10 +12,10 @@ if (!mongoUri) {
     process.exit(1);
   };  
 const dbName = "enterprise";
-connectToDB(mongoUri, dbName);
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+    await connectToDB(mongoUri, dbName);
     console.log(`run on ${PORT}`);
     console.log(`API docs available at http://localhost:${PORT}/api-docs`);
 });
