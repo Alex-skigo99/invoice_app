@@ -12,17 +12,15 @@ on:
 # Define the jobs that will be run
 jobs:
   test:
-    # The type of virtual machine to use
     runs-on: ubuntu-latest
 
-    # Steps to run within the job
     steps:
       # Checkout the repository code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Cache node_modules to speed up builds
-      - name: Cache node modules
+      # Cache root node_modules
+      - name: Cache root node modules
         uses: actions/cache@v3
         with:
           path: node_modules
@@ -36,16 +34,12 @@ jobs:
         with:
           node-version: '20'
 
-      # Install dependencies using npm ci
-      - name: Install dependencies
+      # Install root dependencies using npm ci
+      - name: Install root dependencies
         run: npm ci
-      
-      # Navigate to the client directory
-      - name: Navigate to client directory
-        run: cd client
 
-      # Cache node_modules in the client folder
-      - name: Cache node modules
+      # Cache client node_modules
+      - name: Cache client node modules
         uses: actions/cache@v3
         with:
           path: client/node_modules
@@ -53,26 +47,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # Set up Node.js environment
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      # Install dependencies in the client folder using npm ci
-      - name: Install dependencies
+      # Install client dependencies using npm ci in client folder
+      - name: Install client dependencies
         run: npm ci
         working-directory: client
-      
-      # build the client
+
+      # Build the client
       - name: Build the client
         run: npm run build
         working-directory: client
-      
-      # Navigate back to the root directory
-      - name: Navigate back to root directory
-        run: cd ..
-    
-      # Run your tests with npm test
+
+      # Run tests at the root level
       - name: Run tests
         run: npm test -- --watchAll=false

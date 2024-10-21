@@ -6,7 +6,7 @@ import { Invoice } from "../types/invoice";
 
 const app = createExpressServer();
 
-const mockData: Invoice = {
+const mockData = {
     "id": "1",
     "createdAt": "2021-10-19T00:00:00.000Z",
     "paymentDue": "2021-10-20T00:00:00.000Z",
@@ -63,7 +63,7 @@ describe("invoice CRUD operations test", () => {
 
     // describe("swagger is available", () => {
     //     it("should return 200 OK", async () => {
-    //         const response = await supertest(app).get("http://localhost:3001/api-docs");
+    //         const response = await supertest(app).get("/api-docs");
     //         expect(response.status).toBe(200);
     //     });
     // });
@@ -74,73 +74,93 @@ describe("invoice CRUD operations test", () => {
                 .post("/api/invoices")
                 .send(mockData);
             expect(response.status).toBe(200);
+            // const data: Invoice & {_id: string} = await response.body;
             const data = await response.body;
-            invoiceId = data._id;
-            expect(data.id).toEqual(mockData.id);
-            expect(data.createdAt).toEqual(mockData.createdAt);
-            expect(data.paymentDue).toEqual(mockData.paymentDue);
-            expect(data.description).toEqual(mockData.description);
-            expect(data.paymentTerms).toEqual(mockData.paymentTerms);
-            expect(data.clientName).toEqual(mockData.clientName);
-            expect(data.clientEmail).toEqual(mockData.clientEmail);
-            expect(data.status).toEqual(mockData.status);
-            expect(data.senderAddress.street).toEqual(mockData.senderAddress.street);
-            expect(data.senderAddress.city).toEqual(mockData.senderAddress.city);
-            expect(data.senderAddress.postCode).toEqual(mockData.senderAddress.postCode);
-            expect(data.senderAddress.country).toEqual(mockData.senderAddress.country);
-            expect(data.clientAddress.street).toEqual(mockData.clientAddress.street);
-            expect(data.clientAddress.city).toEqual(mockData.clientAddress.city);
-            expect(data.clientAddress.postCode).toEqual(mockData.clientAddress.postCode);
-            expect(data.clientAddress.country).toEqual(mockData.clientAddress.country);
-            for (let i = 0; i < data.items.length; i++) {
-                expect(data.items[i].name).toEqual(mockData.items[i].name);
-                expect(data.items[i].quantity).toEqual(mockData.items[i].quantity);
-                expect(data.items[i].price).toEqual(mockData.items[i].price);
-                expect(data.items[i].total).toEqual(mockData.items[i].total);
-            };
-            expect(data.total).toEqual(mockData.total);
+            invoiceId = data._id; // store _id for later use
+            expect(data.id).toEqual('1');
+            expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
+            expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
+            expect(data.description).toEqual('Re-branding');
+            expect(data.paymentTerms).toEqual(1);
+            expect(data.clientName).toEqual('Jensen Huang');
+            expect(data.clientEmail).toEqual('name@mail.com');
+            expect(data.status).toEqual('draft');
+            expect(data.senderAddress.street).toEqual('19 Union Terrace');
+            expect(data.senderAddress.city).toEqual('London');
+            expect(data.senderAddress.postCode).toEqual('E1 3EZ');
+            expect(data.senderAddress.country).toEqual('United Kingdom');
+            expect(data.clientAddress.street).toEqual('19 Union Terrace');
+            expect(data.clientAddress.city).toEqual('London');
+            expect(data.clientAddress.postCode).toEqual('E1 3EZ');
+            expect(data.clientAddress.country).toEqual('United Kingdom');
+            expect(data.items.length).toEqual(1);
+            expect(data.items[0].name).toEqual('Brand Guidelines');
+            expect(data.items[0].quantity).toEqual(1);
+            expect(data.items[0].price).toEqual(1800);
+            expect(data.items[0].total).toEqual(1800);
+            expect(data.total).toEqual(1800);
         });
     });
 
     describe("invoice is read and update correctly", () => {
-        it("should update an invoice and return 200", async () => {
+        it("should update an invoice and return it", async () => {
             const response = await supertest(app)
                 .patch(`/api/invoices/${invoiceId}`)
                 .send({
                     "paymentTerms": 2
                 });
+            const data = await response.body;
             expect(response.status).toBe(200);
-            expect(response.body.matchedCount).toEqual(1);
-            expect(response.body.modifiedCount).toEqual(1);
+            expect(data.id).toEqual('1');
+            expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
+            expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
+            expect(data.description).toEqual('Re-branding');
+            expect(data.paymentTerms).toEqual(2);
+            expect(data.clientName).toEqual('Jensen Huang');
+            expect(data.clientEmail).toEqual('name@mail.com');
+            expect(data.status).toEqual('draft');
+            expect(data.senderAddress.street).toEqual('19 Union Terrace');
+            expect(data.senderAddress.city).toEqual('London');
+            expect(data.senderAddress.postCode).toEqual('E1 3EZ');
+            expect(data.senderAddress.country).toEqual('United Kingdom');
+            expect(data.clientAddress.street).toEqual('19 Union Terrace');
+            expect(data.clientAddress.city).toEqual('London');
+            expect(data.clientAddress.postCode).toEqual('E1 3EZ');
+            expect(data.clientAddress.country).toEqual('United Kingdom');
+            expect(data.items.length).toEqual(1);
+            expect(data.items[0].name).toEqual('Brand Guidelines');
+            expect(data.items[0].quantity).toEqual(1);
+            expect(data.items[0].price).toEqual(1800);
+            expect(data.items[0].total).toEqual(1800);
+            expect(data.total).toEqual(1800);
         });
 
         it("should read all mock values including updated value and return 200", async () => {
             const response = await supertest(app).get("/api/invoices");
             expect(response.status).toBe(200);
-            const data = response.body[0];
-            expect(data.id).toEqual(mockData.id);
-            expect(data.createdAt).toEqual(mockData.createdAt);
-            expect(data.paymentDue).toEqual(mockData.paymentDue);
-            expect(data.description).toEqual(mockData.description);
-            expect(data.paymentTerms).toEqual(2); // updated value
-            expect(data.clientName).toEqual(mockData.clientName);
-            expect(data.clientEmail).toEqual(mockData.clientEmail);
-            expect(data.status).toEqual(mockData.status);
-            expect(data.senderAddress.street).toEqual(mockData.senderAddress.street);
-            expect(data.senderAddress.city).toEqual(mockData.senderAddress.city);
-            expect(data.senderAddress.postCode).toEqual(mockData.senderAddress.postCode);
-            expect(data.senderAddress.country).toEqual(mockData.senderAddress.country);
-            expect(data.clientAddress.street).toEqual(mockData.clientAddress.street);
-            expect(data.clientAddress.city).toEqual(mockData.clientAddress.city);
-            expect(data.clientAddress.postCode).toEqual(mockData.clientAddress.postCode);
-            expect(data.clientAddress.country).toEqual(mockData.clientAddress.country);
-            for (let i = 0; i < data.items.length; i++) {
-                expect(data.items[i].name).toEqual(mockData.items[i].name);
-                expect(data.items[i].quantity).toEqual(mockData.items[i].quantity);
-                expect(data.items[i].price).toEqual(mockData.items[i].price);
-                expect(data.items[i].total).toEqual(mockData.items[i].total);
-            };
-            expect(data.total).toEqual(mockData.total);
+            const data = await response.body[0];
+            expect(data.id).toEqual('1');
+            expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
+            expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
+            expect(data.description).toEqual('Re-branding');
+            expect(data.paymentTerms).toEqual(2);
+            expect(data.clientName).toEqual('Jensen Huang');
+            expect(data.clientEmail).toEqual('name@mail.com');
+            expect(data.status).toEqual('draft');
+            expect(data.senderAddress.street).toEqual('19 Union Terrace');
+            expect(data.senderAddress.city).toEqual('London');
+            expect(data.senderAddress.postCode).toEqual('E1 3EZ');
+            expect(data.senderAddress.country).toEqual('United Kingdom');
+            expect(data.clientAddress.street).toEqual('19 Union Terrace');
+            expect(data.clientAddress.city).toEqual('London');
+            expect(data.clientAddress.postCode).toEqual('E1 3EZ');
+            expect(data.clientAddress.country).toEqual('United Kingdom');
+            expect(data.items.length).toEqual(1);
+            expect(data.items[0].name).toEqual('Brand Guidelines');
+            expect(data.items[0].quantity).toEqual(1);
+            expect(data.items[0].price).toEqual(1800);
+            expect(data.items[0].total).toEqual(1800);
+            expect(data.total).toEqual(1800);
         });
     });
 
