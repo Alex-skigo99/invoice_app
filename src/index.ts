@@ -1,40 +1,21 @@
-import express from 'express';
-import cors from 'cors';
-import path from "path";
-import swaggerUi from 'swagger-ui-express';
-import swaggerDocs from './swagger';
-
-import { mainRouter } from './routers/main_router';
-import { errorHandler } from './middleware/errorMiddleware';
+import { createExpressServer } from './config/serverExpress';
 import dotenv from 'dotenv';
+import { connectToDB } from './config/mongoDB';
 
 dotenv.config();
 
-const app = express();
+const app = createExpressServer();
 
-app.use(express.urlencoded({extended: true}));
-app.use(express.json());
-app.use(express.static(path.resolve(__dirname, "../client/build")));
-app.use(cors());
-
-app.get('/', (req, res) => {
-  res.render(path.resolve(__dirname, "../client/build", "index.html"));
-});
-
-// Swagger route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-app.use('/api/', mainRouter);
-
-// All other GET requests not handled before will return our React app
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "../client/build", "index.html"));
-});
-
-app.use(errorHandler);
+const mongoUri = process.env.MONGODB_URI as string;
+if (!mongoUri) {
+    console.error('MongoDB URI is not set in the environment variables.');
+    process.exit(1);
+  };  
+const dbName = "enterprise";
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+    await connectToDB(mongoUri, dbName);
     console.log(`run on ${PORT}`);
     console.log(`API docs available at http://localhost:${PORT}/api-docs`);
 });

@@ -1,33 +1,36 @@
-import { Db, MongoClient, ServerApiVersion } from 'mongodb';
-import dotenv from 'dotenv';
+import { Db, MongoClient } from 'mongodb';
 
-dotenv.config();
-
-const uri = process.env.MONGODB_URI as string;
-const databaseName = "enterprise";
-
-const mongoClient = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-
+export let mongoClient: MongoClient;
 export let db: Db;
 
-(async (dbName: string) => {
-  try {
-    await mongoClient.connect();
-    db = mongoClient.db(dbName);
-    console.log("MongoDB connected");
-  } catch (error) {
-    console.error("An error occurred while connecting to MongoDB: ", error);
-  }
-}) (databaseName);
+export const connectToDB = async (mongoUri: string,  dbName: string) => {
+  mongoClient = new MongoClient(mongoUri);  
+  await mongoClient.connect();
+  db = mongoClient.db(dbName);
+  console.log("MongoDB connected. Database name: ", db.databaseName);
+};
 
-process.on('SIGINT', function() {
-    mongoClient.close();
-    console.log('mongoClient disconnected on app termination');
-    process.exit(0);
-  });
+// process.on('SIGINT', function() {
+//     mongoClient.close();
+//     console.log('mongoClient disconnected on app termination');
+//     process.exit(0);
+//   });
+
+// Gracefully close MongoDB connection and server on process termination
+process.on('SIGINT', async () => {
+  console.log('Received SIGINT. Closing MongoDB connection...');
+  await mongoClient.close();
+  // server.close(() => {
+  //   console.log('Server closed');
+  //   process.exit(0);
+  // });
+});
+
+process.on('exit', async () => {
+  console.log('Received exit. Closing MongoDB connection...');
+  await mongoClient.close();
+  // server.close(() => {
+  //   console.log('Server closed');
+  //   process.exit(0);
+  // });
+});

@@ -25,7 +25,7 @@ describe('mainController() mainController method', () => {
         };
     });
 
-    // Test for the read method
+    // Test for read method
     it("should return invoices with status 200", async () => {
         const mockInvoices = [{ id: 1, amount: 100 }];
         (invoiceModel.read as jest.Mock).mockResolvedValue(mockInvoices);
@@ -39,39 +39,55 @@ describe('mainController() mainController method', () => {
         expect(jsonMock).toHaveBeenCalledWith(mockInvoices);
     });
 
-    // Test for the create method
+    // Test for create method
     it("should create an invoice and return it with status 200", async () => {
-        const mockInvoice = { id: 1, amount: 100 };
-        (invoiceModel.create as jest.Mock).mockResolvedValue(mockInvoice);
+        const mockInvoice = { amount: 100 };
+        const mockNewInvoice = { id: 1, amount: 100 };
+        (invoiceModel.create as jest.Mock).mockResolvedValue(mockNewInvoice);
 
         req.body = mockInvoice;
 
         await mainController.create(req as Request, res as Response);
 
-        expect(invoiceModel.create).toHaveBeenCalledWith(req.body);
+        expect(invoiceModel.create).toHaveBeenCalledWith(mockInvoice);
         expect(statusMock).toHaveBeenCalledWith(200);
-        expect(jsonMock).toHaveBeenCalledWith(mockInvoice);
+        expect(jsonMock).toHaveBeenCalledWith(mockNewInvoice);
     });
 
-    // Test for the update method with a successful update
-    it("should update an invoice and return result with status 200", async () => {
-        const mockResult = { acknowledged: true, matchedCount: 1, modifiedCount: 1 };
-        (invoiceModel.update as jest.Mock).mockResolvedValue(mockResult);
+    // Test for update method - successful update
+    it("should update an invoice and return it with status 200", async () => {
+        const mockInvoice = { amount: 150 };
+        const mockUpdatedInvoice = { id: 1, amount: 150 };
+        (invoiceModel.update as jest.Mock).mockResolvedValue(mockUpdatedInvoice);
 
         req.params = { dbId: "1" };
-        req.body = { amount: 200 };
+        req.body = mockInvoice;
+
+        await mainController.update(req as Request, res as Response);
+
+        expect(invoiceModel.update).toHaveBeenCalledWith("1", mockInvoice);
+        expect(statusMock).toHaveBeenCalledWith(200);
+        expect(jsonMock).toHaveBeenCalledWith(mockUpdatedInvoice);
+    });
+
+    // Test for update method - invoice not found
+    it("should return 404 if invoice to update is not found", async () => {
+        (invoiceModel.update as jest.Mock).mockResolvedValue(null);
+
+        req.params = { dbId: "1" };
+        req.body = { amount: 150 };
 
         await mainController.update(req as Request, res as Response);
 
         expect(invoiceModel.update).toHaveBeenCalledWith("1", req.body);
-        expect(statusMock).toHaveBeenCalledWith(200);
-        expect(jsonMock).toHaveBeenCalledWith(mockResult);
+        expect(statusMock).toHaveBeenCalledWith(404);
+        expect(jsonMock).toHaveBeenCalledWith({ message: "Invoice not found" });
     });
 
-    // Test for the delete method with a successful deletion
+    // Test for delete method - successful delete
     it("should delete an invoice and return result with status 200", async () => {
-        const mockResult = { deletedCount: 1 };
-        (invoiceModel.delete as jest.Mock).mockResolvedValue(mockResult);
+        const mockDeleteResult = { deletedCount: 1 };
+        (invoiceModel.delete as jest.Mock).mockResolvedValue(mockDeleteResult);
 
         req.params = { dbId: "1" };
 
@@ -79,13 +95,13 @@ describe('mainController() mainController method', () => {
 
         expect(invoiceModel.delete).toHaveBeenCalledWith("1");
         expect(statusMock).toHaveBeenCalledWith(200);
-        expect(jsonMock).toHaveBeenCalledWith(mockResult);
+        expect(jsonMock).toHaveBeenCalledWith(mockDeleteResult);
     });
 
-    // Test for the delete method with no matching invoice
+    // Test for delete method - invoice not found
     it("should return 404 if invoice to delete is not found", async () => {
-        const mockResult = { deletedCount: 0 };
-        (invoiceModel.delete as jest.Mock).mockResolvedValue(mockResult);
+        const mockDeleteResult = { deletedCount: 0 };
+        (invoiceModel.delete as jest.Mock).mockResolvedValue(mockDeleteResult);
 
         req.params = { dbId: "1" };
 
@@ -96,8 +112,8 @@ describe('mainController() mainController method', () => {
         expect(jsonMock).toHaveBeenCalledWith({ message: "Invoice not found" });
     });
 
-    // Test for the hello method with a successful connection
-    it("should return a hello message with status 200 if connected to MongoDB", async () => {
+    // Test for hello method - successful connection
+    it("should return a success message if connected to MongoDB", async () => {
         (invoiceModel.check as jest.Mock).mockResolvedValue(true);
 
         await mainController.hello(req as Request, res as Response);
@@ -107,8 +123,8 @@ describe('mainController() mainController method', () => {
         expect(jsonMock).toHaveBeenCalledWith({ message: "Hello from My API with connected to MongoDB!" });
     });
 
-    // Test for the hello method with a failed connection
-    it("should return an error message with status 500 if not connected to MongoDB", async () => {
+    // Test for hello method - failed connection
+    it("should return an error message if not connected to MongoDB", async () => {
         (invoiceModel.check as jest.Mock).mockResolvedValue(false);
 
         await mainController.hello(req as Request, res as Response);
