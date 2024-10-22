@@ -18,19 +18,13 @@ export const connectToDB = async (mongoUri: string,  dbName: string) => {
 
 // Gracefully close MongoDB connection and server on process termination
 process.on('SIGINT', async () => {
+  mongoClient.close();
   console.log('Received SIGINT. Closing MongoDB connection...');
-  await mongoClient.close();
-  // server.close(() => {
-  //   console.log('Server closed');
-  //   process.exit(0);
-  // });
+  process.exit(0);
 });
 
 process.on('exit', async () => {
+  mongoClient.close();
   console.log('Received exit. Closing MongoDB connection...');
-  await mongoClient.close();
-  // server.close(() => {
-  //   console.log('Server closed');
-  //   process.exit(0);
-  // });
+  process.exit(0);
 });

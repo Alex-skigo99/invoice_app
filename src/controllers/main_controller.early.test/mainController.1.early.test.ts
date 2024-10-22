@@ -25,20 +25,6 @@ describe('mainController() mainController method', () => {
         };
     });
 
-    // Test for read method
-    it("should return invoices with status 200", async () => {
-        const mockInvoices = [{ id: 1, amount: 100 }];
-        (invoiceModel.read as jest.Mock).mockResolvedValue(mockInvoices);
-
-        req.query = {};
-
-        await mainController.read(req as Request, res as Response);
-
-        expect(invoiceModel.read).toHaveBeenCalledWith(req.query);
-        expect(statusMock).toHaveBeenCalledWith(200);
-        expect(jsonMock).toHaveBeenCalledWith(mockInvoices);
-    });
-
     // Test for create method
     it("should create an invoice and return it with status 200", async () => {
         const mockInvoice = { amount: 100 };

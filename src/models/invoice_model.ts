@@ -1,21 +1,20 @@
 import { ObjectId } from "mongodb";
 import { db } from "../config/mongoDB";
-import { Invoice } from "../types/invoice";
 
-const collectionName = "invoices";
+export const collectionName = "invoices";
 
 export const invoiceModel = {
 
-    async read(query: {}) {
-        return await db.collection(collectionName).find(query).toArray()
+    async read(query: {}, options?: {}) {
+        return await db.collection(collectionName).find(query, options).toArray()
     },
 
-    async create(invoice: Invoice) {
+    async create(invoice: any) {
         const result = await db.collection(collectionName).insertOne(invoice);
         return { ...invoice, _id: result.insertedId };
     },
 
-    async update(dbId: string, invoice: Invoice) {
+    async update(dbId: string, invoice: any) {
         const result = await db.collection(collectionName).findOneAndUpdate(
             { '_id': new ObjectId(dbId) },
             { $set: { ...invoice } },
@@ -26,6 +25,11 @@ export const invoiceModel = {
 
     async delete(dbId: string) {
         return await db.collection(collectionName).deleteOne({ '_id': new ObjectId(dbId) });
+    },
+
+    async createMany(itemsArray: any[]) {
+        const result = await db.collection(collectionName).insertMany(itemsArray);
+        return result;
     },
 
     async check() {

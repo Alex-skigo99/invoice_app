@@ -3,8 +3,14 @@ import { invoiceModel } from "../models/invoice_model";
     
 export const mainController = {
     read: async (req: Request, res: Response) => {
-            const invoices = await invoiceModel.read(req.query);
-            res.status(200).json(invoices);
+        const { status } = req.query; // status is passed as query parameter
+        const page = parseInt(req.query.page as string) || 1; // page is passed as query parameter for pagination
+        const limit = parseInt(req.query.limit as string) || 10; // limit is passed as query parameter for pagination
+        const skip = (page - 1) * limit;
+        const query = status ? { status } : {};
+        const options = { skip: skip, limit: limit };
+        const invoices = await invoiceModel.read(query, options);
+        res.status(200).json(invoices);
     },
 
     create: async (req: Request, res: Response) => {
