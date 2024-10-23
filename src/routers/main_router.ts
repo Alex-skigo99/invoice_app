@@ -13,20 +13,25 @@ export const mainRouter = express.Router();
  *       - in: query
  *         name: status
  *         schema:
- *           type: string
+ *           $ref: "#/components/schemas/Status"
  *         description: Filter by status (draft, pending, paid)
+ *         nullable: true
  *         example: draft
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *         description: Page number
+ *         nullable: true
+ *         default: 0
  *         example: 1
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *         description: Number of items per page
+ *         nullable: true
+ *         default: 10
  *         example: 10
  *     tags: 
 *        - Invoices
@@ -218,4 +223,10 @@ mainRouter.get('/hello', asyncHandler(mainController.hello));
  *           type: number
  *           format: double
  *           example: 3102.04
+ *     Status:
+ *       type: string
+ *       enum:
+ *         - draft
+ *         - pending
+ *         - paid
  */

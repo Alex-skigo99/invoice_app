@@ -2,7 +2,7 @@ import supertest from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createExpressServer } from "../config/serverExpress";
 import { connectToDB } from "../config/mongoDB";
-import { invoiceModel } from "../models/invoice_model";
+import { Status } from "../types/invoice";
 
 const app = createExpressServer();
 
@@ -37,28 +37,15 @@ const mockData = {
     ],
     "total": 1800
 };
-const paginationMockData = [
-    {
-        "id": "1",
-        "clientName": "Jensen Huang",
-        "status": "draft"
-    },
-    {
-        "id": "2",
-        "clientName": "Jeff Bezos",
-        "status": "paid"
-    },
-    {
-        "id": "3",
-        "clientName": "Elon Musk",
-        "status": "pending"
-    },
-    {
-        "id": "4",
-        "clientName": "Bill Gates",
-        "status": "draft"
-    }
-];
+const statusCollection = ['draft', 'paid', 'pending', 'draft'];
+const paginationMockData = statusCollection.map((status, index) => {
+    return {
+        ...mockData,
+        "id": (index + 1).toString(),
+        "clientName": "Client Name" + (index + 1),
+        "status": status as Status
+    };
+});
 
 let invoiceId: string = "";
 
@@ -202,21 +189,28 @@ describe("invoice CRUD operations test", () => {
     });
 
     describe("pagination and filtration test", () => {
-        it("should return page 2 and limit 2", async () => {
-            const result = await invoiceModel.createMany(paginationMockData);
-            expect(result.insertedCount).toBe(4);
-            const response = await supertest(app).get("/api/invoices?page=2&limit=2");
+        it("should return 2 invoices from 3 when pass page 1 and limit 2", async () => {
+            const result = await supertest(app)
+                .post("/api/invoices")
+                .send(paginationMockData); // create 4 invoices
+            expect(result.body.insertedCount).toBe(4);
+            const response = await supertest(app).get("/api/invoices?page=1&limit=2");
             expect(response.status).toBe(200);
             expect(response.body.length).toBe(2);
             expect(response.body[0].id).toEqual('3');
             expect(response.body[1].id).toEqual('4');
         });
-        it('should return all invoices with status draft', async () => {
+        it('should return 2 invoices with status draft', async () => {
             const response = await supertest(app).get('/api/invoices?status=draft');
             expect(response.status).toBe(200);
             expect(response.body.length).toBe(2);
             expect(response.body[0].id).toEqual('1');
             expect(response.body[1].id).toEqual('4');
+        });
+        it('should return all invoices if pass wrong status', async () => {
+            const response = await supertest(app).get('/api/invoices?status=ok');
+            expect(response.status).toBe(200);
+            expect(response.body.length).toBe(4);
         });
     });
 });
