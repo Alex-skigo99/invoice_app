@@ -2,7 +2,7 @@ import supertest from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createExpressServer } from "../config/serverExpress";
 import { connectToDB } from "../config/mongoDB";
-import { Invoice } from "../types/invoice";
+import { Status } from "../types/invoice";
 
 const app = createExpressServer();
 
@@ -37,6 +37,15 @@ const mockData = {
     ],
     "total": 1800
 };
+const statusCollection = ['draft', 'paid', 'pending', 'draft'];
+const paginationMockData = statusCollection.map((status, index) => {
+    return {
+        ...mockData,
+        "id": (index + 1).toString(),
+        "clientName": "Client Name" + (index + 1),
+        "status": status as Status
+    };
+});
 
 let invoiceId: string = "";
 
@@ -176,6 +185,32 @@ describe("invoice CRUD operations test", () => {
         it("should return empty[] after deleting", async () => {
             const response = await supertest(app).get(`/api/invoices`);
             expect(response.body).toEqual([]);
+        });
+    });
+
+    describe("pagination and filtration test", () => {
+        it("should return 2 invoices from 3 when pass page 1 and limit 2", async () => {
+            const result = await supertest(app)
+                .post("/api/invoices")
+                .send(paginationMockData); // create 4 invoices
+            expect(result.body.insertedCount).toBe(4);
+            const response = await supertest(app).get("/api/invoices?page=1&limit=2");
+            expect(response.status).toBe(200);
+            expect(response.body.length).toBe(2);
+            expect(response.body[0].id).toEqual('3');
+            expect(response.body[1].id).toEqual('4');
+        });
+        it('should return 2 invoices with status draft', async () => {
+            const response = await supertest(app).get('/api/invoices?status=draft');
+            expect(response.status).toBe(200);
+            expect(response.body.length).toBe(2);
+            expect(response.body[0].id).toEqual('1');
+            expect(response.body[1].id).toEqual('4');
+        });
+        it('should return all invoices if pass wrong status', async () => {
+            const response = await supertest(app).get('/api/invoices?status=ok');
+            expect(response.status).toBe(200);
+            expect(response.body.length).toBe(4);
         });
     });
 });

@@ -9,6 +9,30 @@ export const mainRouter = express.Router();
  * /api/invoices:
  *   get:
  *     summary: Get all invoices from the database. Filter by query parameters.
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           $ref: "#/components/schemas/Status"
+ *         description: Filter by status (draft, pending, paid)
+ *         nullable: true
+ *         example: draft
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *         nullable: true
+ *         default: 0
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *         nullable: true
+ *         default: 10
+ *         example: 10
  *     tags: 
 *        - Invoices
  *     responses:
@@ -120,9 +144,6 @@ mainRouter.get('/hello', asyncHandler(mainController.hello));
  *         - items
  *         - total
  *       properties:
- *         _id:
- *           type: string
- *           example: "67076daeff638e662763807c"
  *         id:
  *           type: string
  *           example: "FV2353"
@@ -202,4 +223,10 @@ mainRouter.get('/hello', asyncHandler(mainController.hello));
  *           type: number
  *           format: double
  *           example: 3102.04
+ *     Status:
+ *       type: string
+ *       enum:
+ *         - draft
+ *         - pending
+ *         - paid
  */

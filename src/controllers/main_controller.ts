@@ -1,16 +1,28 @@
 import { Request, Response } from "express";
 import { invoiceModel } from "../models/invoice_model";
+import { InvoicesReadQuery, isValidStatus } from "../types/invoice";
     
 export const mainController = {
     read: async (req: Request, res: Response) => {
-            const invoices = await invoiceModel.read(req.query);
-            res.status(200).json(invoices);
+        const { status } = req.query; // status is passed as query parameter
+        const page = parseInt(req.query.page as string) || 0; // page is passed as query parameter for pagination
+        const limit = parseInt(req.query.limit as string) || 10; // limit is passed as query parameter for pagination
+        const query = (status && isValidStatus(status)) ? { status } : {}; // if status is valid, add it to query
+        const options = { skip: page * limit, limit: limit };
+        const readQuery: InvoicesReadQuery = { query, options };
+        const invoices = await invoiceModel.read(readQuery);
+        res.status(200).json(invoices);
     },
 
     create: async (req: Request, res: Response) => {
         const invoice = req.body;
+        if (Array.isArray(invoice)) {
+            const result = await invoiceModel.createMany(invoice);
+            res.status(200).json(result);  
+        } else {
             const newInvoice = await invoiceModel.create(invoice);
             res.status(200).json(newInvoice);
+        }
     },
 
     update: async (req: Request, res: Response) => {

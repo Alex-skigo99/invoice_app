@@ -1,6 +1,10 @@
 // import { ObjectId } from "mongodb";
 
-type Status = "paid" | "pending" | "draft";
+export type Status = "paid" | "pending" | "draft";
+
+export function isValidStatus(arg: any): arg is Status {
+    return arg === "paid" || arg === "pending" || arg === "draft";
+};
 
 type Address = {
     "street": string,
@@ -30,4 +34,14 @@ export interface Invoice {
     "clientAddress": Address,
     "items": Item[],
     "total": number
+};
+
+export interface InvoicesReadQuery {
+    query: {
+        status?: Status
+    },
+    options: {
+        skip: number,
+        limit: number
+    }
 };
