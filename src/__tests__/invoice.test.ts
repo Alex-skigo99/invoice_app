@@ -83,7 +83,6 @@ describe("invoice CRUD operations test", () => {
                 .post("/api/invoices")
                 .send(mockData);
             expect(response.status).toBe(200);
-            // const data: Invoice & {_id: string} = await response.body;
             const data = await response.body;
             invoiceId = data._id; // store _id for later use
             expect(data.id).toEqual('1');
