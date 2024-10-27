@@ -2,11 +2,11 @@ import supertest from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createExpressServer } from "../config/serverExpress";
 import { connectToDB } from "../config/mongoDB";
-import { Status } from "../types/invoice";
+import { Status, Invoice } from "../types/invoice";
 
 const app = createExpressServer();
 
-const mockData = {
+const mockData: Invoice = {
     "id": "1",
     "createdAt": "2021-10-19T00:00:00.000Z",
     "paymentDue": "2021-10-20T00:00:00.000Z",
@@ -37,8 +37,8 @@ const mockData = {
     ],
     "total": 1800
 };
-const statusCollection = ['draft', 'paid', 'pending', 'draft'];
-const paginationMockData = statusCollection.map((status, index) => {
+const statusCollection: Status[] = ['draft', 'paid', 'pending', 'draft'];
+const paginationMockData: Invoice[] = statusCollection.map((status, index) => {
     return {
         ...mockData,
         "id": (index + 1).toString(),
@@ -189,10 +189,23 @@ describe("invoice CRUD operations test", () => {
 
     describe("pagination and filtration test", () => {
         it("should return 2 invoices from 3 when pass page 1 and limit 2", async () => {
-            const result = await supertest(app)
+            const result1 = await supertest(app)
                 .post("/api/invoices")
-                .send(paginationMockData); // create 4 invoices
-            expect(result.body.insertedCount).toBe(4);
+                .send(paginationMockData[0]);
+            expect(result1.status).toBe(200);
+            const result2 = await supertest(app)
+                .post("/api/invoices")
+                .send(paginationMockData[1]);
+            expect(result2.status).toBe(200);
+            const result3 = await supertest(app)
+                .post("/api/invoices")
+                .send(paginationMockData[2]);
+            expect(result3.status).toBe(200);
+            const result4 = await supertest(app)
+                .post("/api/invoices")
+                .send(paginationMockData[3]);
+            expect(result4.status).toBe(200);
+
             const response = await supertest(app).get("/api/invoices?page=1&limit=2");
             expect(response.status).toBe(200);
             expect(response.body.length).toBe(2);
