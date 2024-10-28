@@ -2,6 +2,8 @@ import { ObjectId } from "mongodb";
 import { db } from "../config/mongoDB";
 import { Invoice } from "../types/invoice";
 import { InvoicesReadQuery } from "../types/invoice";
+import { InvoiceSchema } from "../types/validation";
+
 
 export const collectionName = "invoices";
 
@@ -12,11 +14,13 @@ export const invoiceModel = {
     },
 
     async create(invoice: Invoice) {
+        InvoiceSchema.partial().parse(invoice);
         const result = await db.collection(collectionName).insertOne(invoice);
         return { ...invoice, _id: result.insertedId };
     },
 
     async update(dbId: string, invoice: Invoice) {
+        InvoiceSchema.partial().parse(invoice);
         const result = await db.collection(collectionName).findOneAndUpdate(
             { '_id': new ObjectId(dbId) },
             { $set: { ...invoice } },
@@ -29,10 +33,10 @@ export const invoiceModel = {
         return await db.collection(collectionName).deleteOne({ '_id': new ObjectId(dbId) });
     },
 
-    async createMany(itemsArray: Invoice[]) {
-        const result = await db.collection(collectionName).insertMany(itemsArray);
-        return result;
-    },
+    // async createMany(itemsArray: Invoice[]) {
+    //     const result = await db.collection(collectionName).insertMany(itemsArray);
+    //     return result;
+    // },
 
     async check() {
         await db.command({ ping: 1 });

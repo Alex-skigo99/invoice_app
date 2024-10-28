@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { invoiceModel } from "../models/invoice_model";
-import { InvoicesReadQuery, isValidStatus } from "../types/invoice";
+import { InvoicesReadQuery } from "../types/invoice";
+import { isValidStatus } from "../types/validation";
     
 export const mainController = {
     read: async (req: Request, res: Response) => {
@@ -16,18 +17,13 @@ export const mainController = {
 
     create: async (req: Request, res: Response) => {
         const invoice = req.body;
-        if (Array.isArray(invoice)) {
-            const result = await invoiceModel.createMany(invoice);
-            res.status(200).json(result);  
-        } else {
-            const newInvoice = await invoiceModel.create(invoice);
-            res.status(200).json(newInvoice);
-        }
+        const newInvoice = await invoiceModel.create(invoice);
+        res.status(200).json(newInvoice);
     },
 
     update: async (req: Request, res: Response) => {
         const { dbId } = req.params;
-        const invoice = req.body; // must be without _id
+        const invoice = req.body;
         const result = await invoiceModel.update(dbId, invoice);
         if (result === null) {
             res.status(404).json({ message: "Invoice not found" });

@@ -9,7 +9,7 @@ export const logger = winston.createLogger({
         winston.format.timestamp(),
         winston.format.json(),
         winston.format.printf(({ level, message, timestamp, meta, stack }) => {
-            return `${timestamp} [${level}]: ${message} ${stack ? `\n${stack}` : ''}`;
+            return `${timestamp} [${level}]: message ${message} ${stack ? stack : ''}`;
           })
     ),
     transports: [
@@ -23,7 +23,7 @@ export const logger = winston.createLogger({
                 winston.format.timestamp(),
                 winston.format.json(),
                 winston.format.printf(({ level, message, timestamp, meta }) => {
-                  return `${timestamp} [${level}]: ${message} ${meta? JSON.stringify(meta) : 'no meta'}`;
+                  return `${timestamp} [${level}]: ${message} ${meta? JSON.stringify(meta) : ''}`;
                 })
               )
          }),
