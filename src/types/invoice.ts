@@ -1,10 +1,4 @@
-// import { ObjectId } from "mongodb";
-
 export type Status = "paid" | "pending" | "draft";
-
-export function isValidStatus(arg: any): arg is Status {
-    return arg === "paid" || arg === "pending" || arg === "draft";
-};
 
 type Address = {
     "street": string,

@@ -5,6 +5,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerDocs from '../swagger';
 import { mainRouter } from '../routers/main_router';
 import { errorHandler } from '../middleware/errorMiddleware';
+import { expressWinstonLogger } from '../middleware/logger';
 
 export function createExpressServer() {
     const app = express();
@@ -13,6 +14,7 @@ export function createExpressServer() {
     app.use(express.json());
     app.use(express.static(path.resolve(__dirname, "../../client/build")));
     app.use(cors());
+    app.use(expressWinstonLogger);
     
     // Swagger route
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
@@ -29,6 +31,6 @@ export function createExpressServer() {
     });
     
     app.use(errorHandler);
-    
+        
     return app;
 };

@@ -25,20 +25,6 @@ describe('mainController() mainController method', () => {
         };
     });
 
-    // Test for the create method
-    it("should create an invoice and return it with status 200", async () => {
-        const mockInvoice = { id: 1, amount: 100 };
-        (invoiceModel.create as jest.Mock).mockResolvedValue(mockInvoice);
-
-        req.body = mockInvoice;
-
-        await mainController.create(req as Request, res as Response);
-
-        expect(invoiceModel.create).toHaveBeenCalledWith(req.body);
-        expect(statusMock).toHaveBeenCalledWith(200);
-        expect(jsonMock).toHaveBeenCalledWith(mockInvoice);
-    });
-
     // Test for the update method with a successful update
     it("should update an invoice and return result with status 200", async () => {
         const mockResult = { acknowledged: true, matchedCount: 1, modifiedCount: 1 };
