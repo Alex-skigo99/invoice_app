@@ -2,12 +2,11 @@ import supertest from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createExpressServer } from "../config/serverExpress";
 import { connectToDB } from "../config/mongoDB";
-import exp from "constants";
 
 const app = createExpressServer();
 
 const mockData = {
-    "id": "1",
+    // "id": "1",
     "createdAt": "2021-10-19T00:00:00.000Z",
     "paymentDue": "2021-10-20T00:00:00.000Z",
     "description": "Re-branding",
@@ -35,10 +34,10 @@ const mockData = {
             "total": 1800
         }
     ],
-    "total": 1800
+    // "total": 1800
 };
 
-let invoiceId: string = "";
+let invoiceId: string = ""; 
 
 describe("invoice CRUD operations test", () => {
     let mongoServer: MongoMemoryServer;
@@ -76,7 +75,7 @@ describe("invoice CRUD operations test", () => {
             expect(response.status).toBe(200);
             const data = await response.body;
             invoiceId = data._id; // store _id for later use
-            expect(data.id).toEqual('1');
+            expect(data.id).toEqual(expect.stringMatching(/^[A-Z]{2}\d{3}$/));
             expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
             expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
             expect(data.description).toEqual('Re-branding');
@@ -97,24 +96,25 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].quantity).toEqual(1);
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(1800);
+            expect(data.total).toEqual(0); // total is not calculated when status is draft
         });
     });
 
     describe("invoice is read and update correctly", () => {
-        it("should update an invoice and return it", async () => {
+        it("should update an invoice with status <draft> and return it", async () => {
             const response = await supertest(app)
                 .patch(`/api/invoices/${invoiceId}`)
                 .send({
-                    "paymentTerms": 2
+                    "status": 'draft',
+                    "description": 'Changed description'
                 });
             const data = await response.body;
             expect(response.status).toBe(200);
-            expect(data.id).toEqual('1');
+            expect(data.id).toEqual(expect.stringMatching(/^[A-Z]{2}\d{3}$/));
             expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
             expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
-            expect(data.description).toEqual('Re-branding');
-            expect(data.paymentTerms).toEqual(2);
+            expect(data.description).toEqual('Changed description'); // updated description
+            expect(data.paymentTerms).toEqual(1);
             expect(data.clientName).toEqual('Jensen Huang');
             expect(data.clientEmail).toEqual('name@mail.com');
             expect(data.status).toEqual('draft');
@@ -131,21 +131,55 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].quantity).toEqual(1);
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(1800);
+            expect(data.total).toEqual(0); // total is not calculated when status is draft
+        });
+
+        it("should update an invoice with status <pending> and return it", async () => {
+            const response = await supertest(app)
+                .patch(`/api/invoices/${invoiceId}`)
+                .send({
+                    ...mockData,
+                    "status": 'pending',
+                    "paymentTerms": 2
+                });
+            const data = await response.body;
+            expect(response.status).toBe(200);
+            expect(data.id).toEqual(expect.stringMatching(/^[A-Z]{2}\d{3}$/));
+            expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
+            expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
+            expect(data.description).toEqual('Re-branding');
+            expect(data.paymentTerms).toEqual(2);
+            expect(data.clientName).toEqual('Jensen Huang');
+            expect(data.clientEmail).toEqual('name@mail.com');
+            expect(data.status).toEqual('pending');
+            expect(data.senderAddress.street).toEqual('19 Union Terrace');
+            expect(data.senderAddress.city).toEqual('London');
+            expect(data.senderAddress.postCode).toEqual('E1 3EZ');
+            expect(data.senderAddress.country).toEqual('United Kingdom');
+            expect(data.clientAddress.street).toEqual('19 Union Terrace');
+            expect(data.clientAddress.city).toEqual('London');
+            expect(data.clientAddress.postCode).toEqual('E1 3EZ');
+            expect(data.clientAddress.country).toEqual('United Kingdom');
+            expect(data.items.length).toEqual(1);
+            expect(data.items[0].name).toEqual('Brand Guidelines');
+            expect(data.items[0].quantity).toEqual(1);
+            expect(data.items[0].price).toEqual(1800);
+            expect(data.items[0].total).toEqual(1800);
+            expect(data.total).toEqual(1800); // total is calculated after updating status
         });
 
         it("should read all mock values including updated value and return 200", async () => {
             const response = await supertest(app).get("/api/invoices");
             expect(response.status).toBe(200);
             const data = await response.body[0];
-            expect(data.id).toEqual('1');
+            expect(data.id).toEqual(expect.stringMatching(/^[A-Z]{2}\d{3}$/));
             expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
             expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
             expect(data.description).toEqual('Re-branding');
             expect(data.paymentTerms).toEqual(2);
             expect(data.clientName).toEqual('Jensen Huang');
             expect(data.clientEmail).toEqual('name@mail.com');
-            expect(data.status).toEqual('draft');
+            expect(data.status).toEqual('pending');
             expect(data.senderAddress.street).toEqual('19 Union Terrace');
             expect(data.senderAddress.city).toEqual('London');
             expect(data.senderAddress.postCode).toEqual('E1 3EZ');
@@ -160,8 +194,8 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
             expect(data.total).toEqual(1800);
-        });
     });
+});
 
     describe("invoice is deleted", () => {
         it("should return 200 if exist", async () => {
@@ -182,33 +216,33 @@ describe("invoice CRUD operations test", () => {
         it("should return 2 invoices from 3 when pass page 1 and limit 2", async () => {
             const result1 = await supertest(app)
                 .post("/api/invoices")
-                .send({...mockData, id: '1', status: 'draft', clientName: 'Client Name1'});
+                .send({...mockData, status: 'draft', clientName: 'Client Name1'});
             expect(result1.status).toBe(200);
             const result2 = await supertest(app)
                 .post("/api/invoices")
-                .send({...mockData, id: '2', status: 'paid', clientName: 'Client Name2'});
+                .send({...mockData, status: 'pending', clientName: 'Client Name2'});
             expect(result2.status).toBe(200);
             const result3 = await supertest(app)
                 .post("/api/invoices")
-                .send({...mockData, id: '3', status: 'pending', clientName: 'Client Name3'});
+                .send({...mockData, status: 'pending', clientName: 'Client Name3'});
             expect(result3.status).toBe(200);
             const result4 = await supertest(app)
                 .post("/api/invoices")
-                .send({...mockData, id: '4', status: 'draft', clientName: 'Client Name4'});
+                .send({...mockData, status: 'draft', clientName: 'Client Name4'});
             expect(result4.status).toBe(200);
 
             const response = await supertest(app).get("/api/invoices?page=1&limit=2");
             expect(response.status).toBe(200);
             expect(response.body.length).toBe(2);
-            expect(response.body[0].id).toEqual('3');
-            expect(response.body[1].id).toEqual('4');
+            expect(response.body[0].clientName).toEqual('Client Name3');
+            expect(response.body[1].clientName).toEqual('Client Name4');
         });
         it('should return 2 invoices with status draft', async () => {
             const response = await supertest(app).get('/api/invoices?status=draft');
             expect(response.status).toBe(200);
             expect(response.body.length).toBe(2);
-            expect(response.body[0].id).toEqual('1');
-            expect(response.body[1].id).toEqual('4');
+            expect(response.body[0].clientName).toEqual('Client Name1');
+            expect(response.body[1].clientName).toEqual('Client Name4');
         });
         it('should return all invoices if pass wrong status', async () => {
             const response = await supertest(app).get('/api/invoices?status=ok');
@@ -224,14 +258,16 @@ describe("invoice CRUD operations test", () => {
                 .send({...mockData, clientEmail: 'invalid email'});
             console.log('validation error', response.body);
             expect(response.status).toBe(422);
-            expect(response.body.errors[0].path[0]).toEqual('clientEmail');
+            expect(JSON.stringify(response.body.errors[0]))
+            .toEqual('{"validation":"email","code":"invalid_string","message":"Invalid email","path":["clientEmail"]}');
         });
         it("should return 422 if pass invalid status", async () => {
             const response = await supertest(app)
                 .post("/api/invoices")
-                .send({...mockData, status: 'invalid status'});
+                .send({...mockData, status: 'invalid_status'});
             expect(response.status).toBe(422);
-            expect(response.body.errors[0].path[0]).toEqual('status');
+            expect(JSON.stringify(response.body.errors[0]))
+            .toEqual(`{"received":"invalid_status","code":"invalid_enum_value","options":["paid","pending","draft"],"path":["status"],"message":"Invalid enum value. Expected 'paid' | 'pending' | 'draft', received 'invalid_status'"}`);
         });
     })
 });

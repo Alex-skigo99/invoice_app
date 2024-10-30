@@ -27,9 +27,13 @@ export const mainController = {
         const result = await invoiceModel.update(dbId, invoice);
         if (result === null) {
             res.status(404).json({ message: "Invoice not found" });
-        } else {
-            res.status(200).json(result); // return updated invoice
+            return;
+        } 
+        if (result === 'paid') {
+            res.status(403).json({ message: "Unable to update. Invoice is already paid" });
+            return;
         }
+        res.status(200).json(result); // return updated invoice
     },
 
     delete: async (req: Request, res: Response) => {

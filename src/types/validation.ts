@@ -22,7 +22,7 @@ export const ItemSchema = z.object({
 
 // Invoice as a Zod Object with nested schemas
 export const InvoiceSchema = z.object({
-  id: z.string(),
+  // id: z.string(),
   createdAt: z.string().datetime(),
   paymentDue: z.string().datetime(),
   description: z.string().max(1000),
@@ -33,9 +33,21 @@ export const InvoiceSchema = z.object({
   senderAddress: AddressSchema,
   clientAddress: AddressSchema,
   items: z.array(ItemSchema),
-  total: z.number().nonnegative()
+  // total: z.number().nonnegative()
 });
 
 export function isValidStatus(arg: any): arg is Status {
     return arg === "paid" || arg === "pending" || arg === "draft";
+};
+
+export function validateDraftInvoice(invoice: any) {
+    InvoiceSchema.partial().required({status: true}).parse(invoice); // only status is required and the rest is optional
+};
+
+export function validatePaidInvoice(invoice: any) {
+    InvoiceSchema.pick({status: true}).parse(invoice); // only status is required
+};
+
+export function validatePendingInvoice(invoice: any) {
+    InvoiceSchema.parse(invoice); // all fields are required
 };

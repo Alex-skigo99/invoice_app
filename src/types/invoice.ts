@@ -16,7 +16,7 @@ export type Item = {
 
 export interface Invoice {
     // "_id"?: string;
-    "id": string;
+    "id"?: string;
     "createdAt": string,
     "paymentDue": string,
     "description": string,
@@ -27,7 +27,7 @@ export interface Invoice {
     "senderAddress": Address,
     "clientAddress": Address,
     "items": Item[],
-    "total": number
+    "total"?: number
 };
 
 export interface InvoicesReadQuery {
@@ -39,3 +39,5 @@ export interface InvoicesReadQuery {
         limit: number
     }
 };
+
+export type InvoiceRequest = Partial<Omit<Invoice, 'id' | 'total'>>;
