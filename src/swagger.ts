@@ -1,5 +1,6 @@
 // src/swagger.ts
 import swaggerJsdoc from 'swagger-jsdoc';
+import path from 'path';
 
 const swaggerOptions = {
   definition: {
@@ -10,7 +11,7 @@ const swaggerOptions = {
       description: 'API documentation for my Express app',
     },
   },
-  apis: ['src/routers/*.ts'], // Point to the files where API routes are defined
+  apis: [path.join(__dirname, '../openapi.yml')], // Point to the openapi.yml file
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);

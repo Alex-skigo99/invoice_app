@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
 import { ZodError } from 'zod';
-import { title } from 'process';
+import { CRUDError } from '../types/errors';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   if (err instanceof ZodError) {
@@ -14,10 +14,18 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     });
     return;
   };
+  if (err instanceof CRUDError) {
+    logger.error(err);
+    res.status(400).json({
+      title: err.name,
+      detail: err.message,
+    });
+    return;
+  };
 
-  logger.error(err); // Logging the error
+  logger.error(err); // Logging other errors
   res.status(500).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
+    name: err.name || 'Internal Server Error',
+    detail: err.message || 'Internal Server Error'
   });
 }
