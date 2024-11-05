@@ -1,5 +1,5 @@
-import { calculateTotal, generateID, getTotal } from '../services/invoice_service';
 import { InvoiceRequest, Item } from '../types/invoice';
+import { calculateTotal, generateID, getTotal, createInvoiceInstance } from '../services/invoice_service';
 
 describe('generateID', () => {
     it('should generate an ID with 2 letters followed by 4 digits', () => {
@@ -164,5 +164,62 @@ describe('getTotal', () => {
         };
         const total = getTotal(invoice);
         expect(total).toBe(600);
+    });
+});
+
+describe('createInvoiceInstance', () => {
+    it('should create an invoice with a test description using client name as ID', () => {
+        const invoice: InvoiceRequest = {
+            description: 'test',
+            clientName: 'AA9999',
+            status: 'pending',
+            items: [
+                {
+                    total: 100,
+                    name: '',
+                    quantity: 2,
+                    price: 50
+                }
+            ]
+        };
+        const newInvoice = createInvoiceInstance(invoice);
+        expect(newInvoice.invoice_id).toBe('AA9999');
+        expect(newInvoice.total).toBe(100);
+    });
+
+    it('should create an invoice with a test description using default ID if client name is not provided', () => {
+        const invoice: InvoiceRequest = {
+            description: 'test',
+            status: 'pending',
+            items: [
+                {
+                    total: 100,
+                    name: '',
+                    quantity: 2,
+                    price: 50
+                }
+            ]
+        };
+        const newInvoice = createInvoiceInstance(invoice);
+        expect(newInvoice.invoice_id).toBe('AB1234');
+        expect(newInvoice.total).toBe(100);
+    });
+
+    it('should create an invoice with a generated ID if description is not test', () => {
+        const invoice: InvoiceRequest = {
+            description: 'regular',
+            status: 'pending',
+            items: [
+                {
+                    total: 100,
+                    name: '',
+                    quantity: 2,
+                    price: 50
+                }
+            ]
+        };
+        const newInvoice = createInvoiceInstance(invoice);
+        expect(newInvoice.invoice_id).toMatch(/^[A-Z]{2}\d{4}$/);
+        expect(newInvoice.total).toBe(100);
     });
 });

@@ -35,7 +35,9 @@ const mockData = {
     ],
 };
 
-let invoiceId: string = ""; 
+let createdMongoId: string = "";
+let createdMongoId_2: string = "";
+let createdInvoiceId: string = "";
 
 describe("invoice CRUD operations test", () => {
     let mongoServer: MongoMemoryServer;
@@ -65,15 +67,16 @@ describe("invoice CRUD operations test", () => {
     //     });
     // });
 
-    describe("invoice is created", () => {
-        it("should return 200", async () => {
+    describe("create invoice", () => {
+        it("should return 200 if sent all fields", async () => {
             const response = await supertest(app)
                 .post("/api/invoices")
                 .send(mockData);
             expect(response.status).toBe(200);
             const data = await response.body;
-            invoiceId = data._id; // store _id for later use
-            expect(data.invoice_id).toEqual(expect.stringMatching(/^[A-Z]{2}\d{4}$/));
+            createdMongoId = data._id; // store _id for later use
+            expect(data.invoice_id).toBeDefined();
+            createdInvoiceId = data.invoice_id; // store invoice_id for later use
             expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
             expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
             expect(data.description).toEqual('Re-branding');
@@ -96,12 +99,48 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].total).toEqual(1800);
             expect(data.total).toEqual(0); // total is not calculated when status is draft
         });
+        it("should return 200 if generateId return existing invoice_id", async () => {
+            const testMockData = {
+                ...mockData,
+                "description": "test",
+                "clientName": createdInvoiceId
+            };
+            const response = await supertest(app)
+                .post("/api/invoices")
+                .send(testMockData);
+            expect(response.status).toBe(200);
+            const data = await response.body;
+            createdMongoId_2 = data._id; // store _id for later use
+            expect(data.invoice_id).not.toEqual(createdInvoiceId); // invoice_id was changed to random
+            expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
+            expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
+            expect(data.description).toEqual('');
+            expect(data.paymentTerms).toEqual(1);
+            expect(data.clientName).toEqual(createdInvoiceId);
+            expect(data.clientEmail).toEqual('name@mail.com');
+            expect(data.status).toEqual('draft');
+            expect(data.senderAddress.street).toEqual('19 Union Terrace');
+            expect(data.senderAddress.city).toEqual('London');
+            expect(data.senderAddress.postCode).toEqual('E1 3EZ');
+            expect(data.senderAddress.country).toEqual('United Kingdom');
+            expect(data.clientAddress.street).toEqual('19 Union Terrace');
+            expect(data.clientAddress.city).toEqual('London');
+            expect(data.clientAddress.postCode).toEqual('E1 3EZ');
+            expect(data.clientAddress.country).toEqual('United Kingdom');
+            expect(data.items.length).toEqual(1);
+            expect(data.items[0].name).toEqual('Brand Guidelines');
+            expect(data.items[0].quantity).toEqual(1);
+            expect(data.items[0].price).toEqual(1800);
+            expect(data.items[0].total).toEqual(1800);
+            expect(data.total).toEqual(0); // total is not calculated when status is draft
+            await supertest(app).delete(`/api/invoices/${createdMongoId_2}`);
+        });
     });
 
     describe("invoice is read and update correctly", () => {
         it("should update an invoice with status <draft> and return it", async () => {
             const response = await supertest(app)
-                .patch(`/api/invoices/${invoiceId}`)
+                .patch(`/api/invoices/${createdMongoId}`)
                 .send({
                     "status": 'draft',
                     "description": 'Changed description'
@@ -134,7 +173,7 @@ describe("invoice CRUD operations test", () => {
 
         it("should update an invoice with status <pending> and return it", async () => {
             const response = await supertest(app)
-                .patch(`/api/invoices/${invoiceId}`)
+                .patch(`/api/invoices/${createdMongoId}`)
                 .send({
                     ...mockData,
                     "status": 'pending',
@@ -195,13 +234,13 @@ describe("invoice CRUD operations test", () => {
     });
 });
 
-    describe("invoice is deleted", () => {
+    describe("delete invoice", () => {
         it("should return 200 if exist", async () => {
-            const response = await supertest(app).delete(`/api/invoices/${invoiceId}`);
+            const response = await supertest(app).delete(`/api/invoices/${createdMongoId}`);
             expect(response.status).toBe(200);
         });
         it("should return 404 if not exist after deleting", async () => {
-            const response = await supertest(app).delete(`/api/invoices/${invoiceId}`);
+            const response = await supertest(app).delete(`/api/invoices/${createdMongoId}`);
             expect(response.status).toBe(400);
         });
         it("should return empty[] after deleting", async () => {

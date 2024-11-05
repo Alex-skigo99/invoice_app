@@ -44,7 +44,7 @@ export function validateDraftInvoice(invoice: any) {
 };
 
 export function validatePaidInvoice(invoice: any) {
-  InvoiceSchema.pick({status: true}).parse(invoice); // only status is required
+  InvoiceSchema.pick({status: true}).strict().parse(invoice); // only status is required
 };
 
 export function validatePendingInvoice(invoice: any) {

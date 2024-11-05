@@ -3,6 +3,7 @@ import { invoiceModel } from "../models/invoice_model";
 import { InvoicesReadQuery } from "../types/invoice";
 import { isValidStatus } from "../types/validation";
 import { CRUDError } from "../types/errors";
+import { createInvoiceInstance } from "../services/invoice_service";
     
 export const mainController = {
     read: async (req: Request, res: Response) => {
@@ -18,7 +19,7 @@ export const mainController = {
 
     create: async (req: Request, res: Response) => {
         const invoice = req.body;
-        const newInvoice = await invoiceModel.create(invoice);
+        const newInvoice = await invoiceModel.create(invoice, createInvoiceInstance);
         res.status(200).json(newInvoice);
     },
 

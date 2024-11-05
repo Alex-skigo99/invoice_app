@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
 import { ZodError } from 'zod';
 import { CRUDError } from '../types/errors';
+import { MongoError } from 'mongodb';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   if (err instanceof ZodError) {
@@ -19,6 +20,15 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     res.status(400).json({
       title: err.name,
       detail: err.message,
+    });
+    return;
+  };
+  if (err instanceof MongoError) {
+    logger.error(err);
+    res.status(400).json({
+      title: err.name,
+      detail: err.message,
+      code: err.code,
     });
     return;
   };

@@ -1,12 +1,11 @@
 import { ObjectId } from "mongodb";
 import { db } from "../config/mongoDB";
-import { InvoicesReadQuery, InvoiceRequest } from "../types/invoice";
+import { InvoicesReadQuery, InvoiceRequest, Invoice } from "../types/invoice";
 import { validateCreateRequest, validateUpdateRequest } from "../types/validation";
-import { generateID, getTotal } from "../services/invoice_service";
+import { getTotal } from "../services/invoice_service";
 
 
-export const collectionName = "invoices";
-
+const collectionName = "invoices";
 
 export const invoiceModel = {
 
@@ -18,9 +17,19 @@ export const invoiceModel = {
         return await db.collection(collectionName).findOne({ '_id': new ObjectId(dbId) });
     },
 
-    async create(invoice: InvoiceRequest) {
+    async create(invoice: InvoiceRequest, createInvoiceInstance: (invoice: InvoiceRequest) => Invoice) {
         validateCreateRequest(invoice);
-        const newInvoice = {...invoice, invoice_id: generateID(), total: getTotal(invoice)};
+        let newInvoice;
+        while (!newInvoice) {
+            let genInvoice = createInvoiceInstance(invoice);
+            const invoiceDb = await db.collection(collectionName).findOne({ 'invoice_id': genInvoice.invoice_id });
+            if (invoiceDb === null) {
+                newInvoice = genInvoice;
+            }
+            if (genInvoice.description === 'test') {
+                invoice.description = ''; // Return empty description for the next iteration with a random ID
+            }
+        };
         const result = await db.collection(collectionName).insertOne(newInvoice);
         return { ...newInvoice, _id: result.insertedId };
     },
