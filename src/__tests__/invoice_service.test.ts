@@ -73,7 +73,7 @@ describe('calculateTotal', () => {
 });
 
 describe('getTotal', () => {
-    it('should return 0 for draft invoices', () => {
+    it('should return 0 for draft invoices without items', () => {
         const invoice: InvoiceRequest = {
             status: 'draft',
             items: []
@@ -82,7 +82,7 @@ describe('getTotal', () => {
         expect(total).toBe(0);
     });
 
-    it('should return 0 for draft invoices with items', () => {
+    it('should return SUM for draft invoices with items', () => {
         const invoice: InvoiceRequest = {
             status: 'draft',
             items: [
@@ -107,7 +107,7 @@ describe('getTotal', () => {
             ]
         };
         const total = getTotal(invoice);
-        expect(total).toBe(0);
+        expect(total).toBe(600);
     });
 
     it('should return total for pending invoices', () => {

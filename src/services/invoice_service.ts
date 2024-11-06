@@ -12,10 +12,7 @@ export const calculateTotal = (items: Required<Item[]>) => items.reduce((acc, it
  // calculate total from items
 
 export function getTotal(invoice: InvoiceRequest): number {
-    let total = 0;
-    if (invoice.status === 'pending' || invoice.status === 'paid') {
-        invoice.items ? total = calculateTotal(invoice.items) : 0;
-    }
+    let total = invoice.items ? calculateTotal(invoice.items) : 0;
     return total;
 };
 
@@ -29,4 +26,12 @@ export const createInvoiceInstance = (invoice: InvoiceRequest) => {
     // Otherwise, generate a random invoice ID
     newInvoice = {...invoice, invoice_id: generateID(), total: getTotal(invoice) };
     return newInvoice;
+};
+
+export const updateInvoiceInstance = (invoice: InvoiceRequest) => {
+    if (invoice.items) {
+        const toUpdate = {...invoice, total: getTotal(invoice)};
+        return toUpdate;
+    }
+    return invoice;
 };

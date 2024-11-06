@@ -97,7 +97,7 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].quantity).toEqual(1);
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(0); // total is not calculated when status is draft
+            expect(data.total).toEqual(1800);
         });
         it("should return 200 if generateId return existing invoice_id", async () => {
             const testMockData = {
@@ -132,7 +132,7 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].quantity).toEqual(1);
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(0); // total is not calculated when status is draft
+            expect(data.total).toEqual(1800);
             await supertest(app).delete(`/api/invoices/${createdMongoId_2}`);
         });
     });
@@ -168,7 +168,7 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].quantity).toEqual(1);
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(0); // total is not calculated when status is draft
+            expect(data.total).toEqual(1800);
         });
 
         it("should update an invoice with status <pending> and return it", async () => {
@@ -241,9 +241,9 @@ describe("invoice CRUD operations test", () => {
         });
         it("should return 404 if not exist after deleting", async () => {
             const response = await supertest(app).delete(`/api/invoices/${createdMongoId}`);
-            expect(response.status).toBe(400);
+            expect(response.status).toBe(404);
         });
-        it("should return empty[] after deleting", async () => {
+        it("should return empty[] if try to get after deleting", async () => {
             const response = await supertest(app).get(`/api/invoices`);
             expect(response.body).toEqual([]);
         });
