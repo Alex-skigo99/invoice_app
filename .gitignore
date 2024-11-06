@@ -141,3 +141,4 @@ dist
 .early.coverage
 
 .DS_Store
+src/.DS_Store
