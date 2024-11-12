@@ -18,15 +18,17 @@ export const invoiceModel = {
         return await db.collection(collectionName).findOne({ '_id': new ObjectId(dbId) });
     },
 
-    async ableToUpdateOrThrow(dbId: string) {
-        const invoiceDb = await db.collection(collectionName).findOne({ '_id': new ObjectId(dbId) });
+    async findByIdOrThrow(dbId: string) {
+        const invoiceDb = await db.collection(collectionName).findOne({ '_id': new ObjectId(dbId) }) as Invoice | null;
         if (invoiceDb === null) throw new ResourceNotExistError("Invoice not found");
-        if (invoiceDb.status === 'paid') throw new ValidationError("Unable to update. Invoice is already paid");
+        return invoiceDb;
     },
 
-    async ableToDeleteOrThrow(dbId: string) {
-        const invoiceDb = await db.collection(collectionName).findOne({ '_id': new ObjectId(dbId) });
+    async findByIdOrThrowUpdate(dbId: string) {
+        const invoiceDb = await db.collection(collectionName).findOne({ '_id': new ObjectId(dbId) }) as Invoice | null;
         if (invoiceDb === null) throw new ResourceNotExistError("Invoice not found");
+        if (invoiceDb.status === 'paid') throw new ValidationError("Unable to update. Invoice is already paid");
+        return invoiceDb;
     },
 
     async create(invoice: InvoiceRequest, createInvoiceInstance: (invoice: InvoiceRequest) => Invoice) {
@@ -38,11 +40,11 @@ export const invoiceModel = {
             if (invoiceDb === null) {
                 newInvoice = genInvoice;
             }
-            if (genInvoice.description === 'test') {
-                invoice.description = ''; // Return empty description for the next iteration with a random ID
-            }
         };
-        const result = await db.collection(collectionName).insertOne(newInvoice);
+        const result = await db.collection(collectionName).insertOne({
+            ...newInvoice,
+            _id: new ObjectId()
+        });
         return { ...newInvoice, _id: result.insertedId };
     },
 
@@ -57,8 +59,8 @@ export const invoiceModel = {
         return result; 
     },
 
-    async delete(dbId: string) {
-        return await db.collection(collectionName).deleteOne({ '_id': new ObjectId(dbId) }); 
+    async delete(invoice: Invoice) {
+        return await db.collection(collectionName).deleteOne({ '_id': new ObjectId(invoice._id) }); 
         // {"acknowledged": true,"deletedCount": 1}
     },
 
