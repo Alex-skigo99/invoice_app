@@ -5,7 +5,7 @@ import { generateID } from "../services/invoice_service";
 function calculateRepeatingResults_1_by_Copilot(iterations: number = 10000): number {
     const results = new Map<string, number>();
     for (let i = 0; i < iterations; i++) {
-        const id = generateID();
+        const id = generateID.get();
         results.set(id, (results.get(id) || 0) + 1);
     }
     let repeatingCount = 0;
@@ -22,7 +22,7 @@ function calculateRepeatingResults_2_by_myself(iterations: number = 10000): numb
     let repeatingCount = 0;
     const results = new Set<string>();
     for (let i = 0; i < iterations; i++) {
-        const id = generateID();
+        const id = generateID.get();
         if (results.has(id)) {
             repeatingCount++;
         } else {

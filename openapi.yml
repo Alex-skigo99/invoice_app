@@ -49,6 +49,9 @@ paths:
       responses:
         '200':
           description: Success
+        '400':
+          description: Bad Request
+          $ref: '#/components/responses/BadRequest'
   /api/invoices/{dbId}:
     patch:
       summary: Update an existing invoice in the database.
@@ -72,6 +75,9 @@ paths:
         '200':
           description: Success
         '400':
+          description: Bad Request
+          $ref: '#/components/responses/BadRequest'
+        '404':
           description: Invoice not found
           $ref: '#/components/responses/BadRequest'
         '422':
@@ -92,7 +98,7 @@ paths:
       responses:
         '200':
           description: Success
-        '400':
+        '404':
           description: Invoice not found
           $ref: '#/components/responses/BadRequest'
   /api/hello:

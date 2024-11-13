@@ -1,6 +1,13 @@
-export class CRUDError extends Error {
+export class ValidationError extends Error {
     constructor(message: string) {
         super(message);
-        this.name = 'CRUDError';
+        this.name = 'ValidationError';
+    }
+};
+
+export class ResourceNotExistError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ResourceNotExistError';
     }
 };
