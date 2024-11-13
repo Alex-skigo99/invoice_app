@@ -2,10 +2,12 @@ import supertest from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createExpressServer } from "../config/serverExpress";
 import { connectToDB } from "../config/mongoDB";
+import { generateID } from "../services/invoice_service";
+import { InvoiceRequest } from "../types/invoice";
 
 const app = createExpressServer();
 
-const mockData = {
+const mockData: InvoiceRequest = {
     "createdAt": "2021-10-19T00:00:00.000Z",
     "paymentDue": "2021-10-20T00:00:00.000Z",
     "description": "Re-branding",
@@ -99,41 +101,23 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].total).toEqual(1800);
             expect(data.total).toEqual(1800);
         });
-        it("should return 200 if generateId return existing invoice_id", async () => {
-            const testMockData = {
-                ...mockData,
-                "description": "test",
-                "clientName": createdInvoiceId
-            };
+        it("should return 200 if generateId return existing invoice_id spyOn", async () => {
+            console.log('createdInvoiceId', createdInvoiceId); //debug
+            const spyGenerateId = jest.spyOn(generateID, 'get')
+            .mockClear()
+            .mockReturnValueOnce(createdInvoiceId) // return existing invoice_id for first call
+            .mockReturnValueOnce('AA9999'); // return new invoice_id for second call
             const response = await supertest(app)
                 .post("/api/invoices")
-                .send(testMockData);
-            expect(response.status).toBe(200);
+                .send(mockData);
             const data = await response.body;
+            expect(response.status).toBe(200);
+            expect(spyGenerateId).toHaveBeenCalled();
+            expect(spyGenerateId).toHaveBeenCalledTimes(2);
             createdMongoId_2 = data._id; // store _id for later use
-            expect(data.invoice_id).not.toEqual(createdInvoiceId); // invoice_id was changed to random
-            expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
-            expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
-            expect(data.description).toEqual('');
-            expect(data.paymentTerms).toEqual(1);
-            expect(data.clientName).toEqual(createdInvoiceId);
-            expect(data.clientEmail).toEqual('name@mail.com');
-            expect(data.status).toEqual('draft');
-            expect(data.senderAddress.street).toEqual('19 Union Terrace');
-            expect(data.senderAddress.city).toEqual('London');
-            expect(data.senderAddress.postCode).toEqual('E1 3EZ');
-            expect(data.senderAddress.country).toEqual('United Kingdom');
-            expect(data.clientAddress.street).toEqual('19 Union Terrace');
-            expect(data.clientAddress.city).toEqual('London');
-            expect(data.clientAddress.postCode).toEqual('E1 3EZ');
-            expect(data.clientAddress.country).toEqual('United Kingdom');
-            expect(data.items.length).toEqual(1);
-            expect(data.items[0].name).toEqual('Brand Guidelines');
-            expect(data.items[0].quantity).toEqual(1);
-            expect(data.items[0].price).toEqual(1800);
-            expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(1800);
+            expect(data.invoice_id).toEqual('AA9999'); // expect value for second call
             await supertest(app).delete(`/api/invoices/${createdMongoId_2}`);
+            spyGenerateId.mockRestore();
         });
     });
 

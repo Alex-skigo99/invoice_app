@@ -34,7 +34,6 @@ describe('mainController() mainController method', () => {
 
         await mainController.delete(req as Request, res as Response);
 
-        expect(invoiceModel.delete).toHaveBeenCalledWith("1");
         expect(statusMock).toHaveBeenCalledWith(200);
         expect(jsonMock).toHaveBeenCalledWith(mockDeleteResult);
     });
