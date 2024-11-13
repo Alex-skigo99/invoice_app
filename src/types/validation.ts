@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Status } from './invoice';
+import { CRUDError } from './errors';
 
 // Status as a Zod Enum
 export const StatusSchema = z.enum(["paid", "pending", "draft"]);
@@ -22,7 +23,6 @@ export const ItemSchema = z.object({
 
 // Invoice as a Zod Object with nested schemas
 export const InvoiceSchema = z.object({
-  // id: z.string(),
   createdAt: z.string().datetime(),
   paymentDue: z.string().datetime(),
   description: z.string().max(1000),
@@ -33,21 +33,48 @@ export const InvoiceSchema = z.object({
   senderAddress: AddressSchema,
   clientAddress: AddressSchema,
   items: z.array(ItemSchema),
-  // total: z.number().nonnegative()
 });
 
 export function isValidStatus(arg: any): arg is Status {
-    return arg === "paid" || arg === "pending" || arg === "draft";
+  return arg === "paid" || arg === "pending" || arg === "draft";
 };
 
 export function validateDraftInvoice(invoice: any) {
-    InvoiceSchema.partial().required({status: true}).parse(invoice); // only status is required and the rest is optional
+  InvoiceSchema.partial().required({status: true}).parse(invoice); // only status is required and the rest is optional
 };
 
 export function validatePaidInvoice(invoice: any) {
-    InvoiceSchema.pick({status: true}).parse(invoice); // only status is required
+  InvoiceSchema.pick({status: true}).parse(invoice); // only status is required
 };
 
 export function validatePendingInvoice(invoice: any) {
-    InvoiceSchema.parse(invoice); // all fields are required
+  InvoiceSchema.parse(invoice); // all fields are required
+};
+
+export function validateCreateRequest(invoice: any) {
+  validateDraftInvoice(invoice); // vaidate status property
+  if (invoice.status === 'draft') {
+    return;
+  };
+  if (invoice.status === 'pending') {
+    validatePendingInvoice(invoice); // if ststus is 'pending' or 'paid' all fields are required
+    return;
+  };
+  if (invoice.status === 'paid') {
+    throw new CRUDError('Cannot create an invoice with status "paid"');
+  };
+};
+
+export function validateUpdateRequest(invoice: any) {
+  validateDraftInvoice(invoice); // vaidate status property
+  switch (invoice.status) {
+    case 'paid':
+        validatePaidInvoice(invoice); // only status
+        break;
+    case 'pending':
+        validatePendingInvoice(invoice); // all fields are required
+        break;
+    case 'draft':
+        break;
+  };
 };

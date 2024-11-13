@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { invoiceModel } from "../models/invoice_model";
 import { InvoicesReadQuery } from "../types/invoice";
 import { isValidStatus } from "../types/validation";
+import { CRUDError } from "../types/errors";
     
 export const mainController = {
     read: async (req: Request, res: Response) => {
@@ -24,34 +25,23 @@ export const mainController = {
     update: async (req: Request, res: Response) => {
         const { dbId } = req.params;
         const invoice = req.body;
+        const invoiceDb = await invoiceModel.readOne(dbId);
+        if (invoiceDb === null) throw new CRUDError("Invoice for update not found");
+        if (invoiceDb.status === 'paid') throw new CRUDError("Unable to update. Invoice is already paid");
         const result = await invoiceModel.update(dbId, invoice);
-        if (result === null) {
-            res.status(404).json({ message: "Invoice not found" });
-            return;
-        } 
-        if (result === 'paid') {
-            res.status(403).json({ message: "Unable to update. Invoice is already paid" });
-            return;
-        }
         res.status(200).json(result); // return updated invoice
     },
 
     delete: async (req: Request, res: Response) => {
         const { dbId } = req.params;
+        const invoiceDb = await invoiceModel.readOne(dbId);
+        if (invoiceDb === null) throw new CRUDError("Invoice for deletion not found");
         const result = await invoiceModel.delete(dbId);
-        if (result.deletedCount === 0) {
-            res.status(404).json({ message: "Invoice not found" });
-        } else {
-            res.status(200).json(result);
-        }
+        res.status(200).json(result);
     },
 
     hello: async (req: Request, res: Response) => {
-        if (await invoiceModel.check()) {
-            res.status(200).json({ message: "Hello from My API with connected to MongoDB!" });
-        }
-        else {
-            res.status(500).json({ message: "An error occurred while connecting to MongoDB" });
-        }
+        await invoiceModel.ping();
+        res.status(200).json({ message: "Hello from My API with connected to MongoDB!" });
     },
 };

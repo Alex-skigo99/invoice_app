@@ -2,7 +2,6 @@ import { InvoiceRequest } from '../types/invoice';
 import { InvoiceSchema } from '../types/validation';
 
 const validInvoice: InvoiceRequest = {
-    // id: '123',
     createdAt: '2023-10-01T00:00:00Z',
     paymentDue: '2023-10-15T00:00:00Z',
     description: 'Web development services',
@@ -30,7 +29,6 @@ const validInvoice: InvoiceRequest = {
             total: 1000
         }
     ],
-    // total: 1000
 };
 
 describe('InvoiceSchema', () => {
@@ -54,7 +52,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with invalid createdAt', () => {
         const invalidInvoice = {...validInvoice, createdAt: '2023-10-01'};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid createdAt', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -69,7 +66,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with invalid paymentDue', () => {
         const invalidInvoice = {...validInvoice, paymentDue: '2023-10-15'};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid paymentDue', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -84,7 +80,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with too long description', () => {
         const invalidInvoice = {...validInvoice, description: 'a'.repeat(1001)};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid description', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -102,7 +97,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with too high paymentTerms', () => {
         const invalidInvoice = {...validInvoice, paymentTerms: 181};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid paymentTerms', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -120,7 +114,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with incorrect email', () => {
         const invalidInvoice = {...validInvoice, clientEmail: 'invalid-email'};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid clientEmail', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -135,7 +128,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with incorrect status', () => {
         const invalidInvoice = {...validInvoice, status: 'invalid-status'};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid status', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -151,7 +143,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with incorrect senderAddress', () => {
         const invalidInvoice = {...validInvoice, senderAddress: {street: 123}};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid senderAddress', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -188,7 +179,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with incorrect clientAddress', () => {
         const invalidInvoice = {...validInvoice, clientAddress: {street: 123}};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid clientAddress', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -225,7 +215,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an invoice with incorrect items', () => {
         const invalidInvoice = {...validInvoice, items: [{name: 'Website Design', quantity: 1, price: 1000}]};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid items', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -241,7 +230,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an item with negative quantity', () => {
         const invalidInvoice = {...validInvoice, items: [{name: 'Website Design', quantity: -1, price: 1000, total: 1000}]};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid quantity', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -259,7 +247,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an item with negative price', () => {
         const invalidInvoice = {...validInvoice, items: [{name: 'Website Design', quantity: 1, price: -1000, total: 1000}]};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid price', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
@@ -277,7 +264,6 @@ describe('InvoiceSchema', () => {
     it('should invalidate an item with negative total', () => {
         const invalidInvoice = {...validInvoice, items: [{name: 'Website Design', quantity: 1, price: 1000, total: -1000}]};
         const result = InvoiceSchema.safeParse(invalidInvoice);
-        console.log('invalid item total', result.error?.issues);
         expect(result.error?.issues).toEqual(
             [
                 {
