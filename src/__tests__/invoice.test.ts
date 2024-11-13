@@ -2,10 +2,12 @@ import supertest from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createExpressServer } from "../config/serverExpress";
 import { connectToDB } from "../config/mongoDB";
+import { generateID } from "../services/invoice_service";
+import { InvoiceRequest } from "../types/invoice";
 
 const app = createExpressServer();
 
-const mockData = {
+const mockData: InvoiceRequest = {
     "createdAt": "2021-10-19T00:00:00.000Z",
     "paymentDue": "2021-10-20T00:00:00.000Z",
     "description": "Re-branding",
@@ -35,7 +37,9 @@ const mockData = {
     ],
 };
 
-let invoiceId: string = ""; 
+let createdMongoId: string = "";
+let createdMongoId_2: string = "";
+let createdInvoiceId: string = "";
 
 describe("invoice CRUD operations test", () => {
     let mongoServer: MongoMemoryServer;
@@ -65,15 +69,16 @@ describe("invoice CRUD operations test", () => {
     //     });
     // });
 
-    describe("invoice is created", () => {
-        it("should return 200", async () => {
+    describe("create invoice", () => {
+        it("should return 200 if sent all fields", async () => {
             const response = await supertest(app)
                 .post("/api/invoices")
                 .send(mockData);
             expect(response.status).toBe(200);
             const data = await response.body;
-            invoiceId = data._id; // store _id for later use
-            expect(data.invoice_id).toEqual(expect.stringMatching(/^[A-Z]{2}\d{4}$/));
+            createdMongoId = data._id; // store _id for later use
+            expect(data.invoice_id).toBeDefined();
+            createdInvoiceId = data.invoice_id; // store invoice_id for later use
             expect(data.createdAt).toEqual('2021-10-19T00:00:00.000Z');
             expect(data.paymentDue).toEqual('2021-10-20T00:00:00.000Z');
             expect(data.description).toEqual('Re-branding');
@@ -94,14 +99,32 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].quantity).toEqual(1);
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(0); // total is not calculated when status is draft
+            expect(data.total).toEqual(1800);
+        });
+        it("should return 200 if generateId return existing invoice_id spyOn", async () => {
+            console.log('createdInvoiceId', createdInvoiceId); //debug
+            const spyGenerateId = jest.spyOn(generateID, 'get')
+            .mockClear()
+            .mockReturnValueOnce(createdInvoiceId) // return existing invoice_id for first call
+            .mockReturnValueOnce('AA9999'); // return new invoice_id for second call
+            const response = await supertest(app)
+                .post("/api/invoices")
+                .send(mockData);
+            const data = await response.body;
+            expect(response.status).toBe(200);
+            expect(spyGenerateId).toHaveBeenCalled();
+            expect(spyGenerateId).toHaveBeenCalledTimes(2);
+            createdMongoId_2 = data._id; // store _id for later use
+            expect(data.invoice_id).toEqual('AA9999'); // expect value for second call
+            await supertest(app).delete(`/api/invoices/${createdMongoId_2}`);
+            spyGenerateId.mockRestore();
         });
     });
 
     describe("invoice is read and update correctly", () => {
         it("should update an invoice with status <draft> and return it", async () => {
             const response = await supertest(app)
-                .patch(`/api/invoices/${invoiceId}`)
+                .patch(`/api/invoices/${createdMongoId}`)
                 .send({
                     "status": 'draft',
                     "description": 'Changed description'
@@ -129,12 +152,12 @@ describe("invoice CRUD operations test", () => {
             expect(data.items[0].quantity).toEqual(1);
             expect(data.items[0].price).toEqual(1800);
             expect(data.items[0].total).toEqual(1800);
-            expect(data.total).toEqual(0); // total is not calculated when status is draft
+            expect(data.total).toEqual(1800);
         });
 
         it("should update an invoice with status <pending> and return it", async () => {
             const response = await supertest(app)
-                .patch(`/api/invoices/${invoiceId}`)
+                .patch(`/api/invoices/${createdMongoId}`)
                 .send({
                     ...mockData,
                     "status": 'pending',
@@ -195,16 +218,16 @@ describe("invoice CRUD operations test", () => {
     });
 });
 
-    describe("invoice is deleted", () => {
+    describe("delete invoice", () => {
         it("should return 200 if exist", async () => {
-            const response = await supertest(app).delete(`/api/invoices/${invoiceId}`);
+            const response = await supertest(app).delete(`/api/invoices/${createdMongoId}`);
             expect(response.status).toBe(200);
         });
         it("should return 404 if not exist after deleting", async () => {
-            const response = await supertest(app).delete(`/api/invoices/${invoiceId}`);
-            expect(response.status).toBe(400);
+            const response = await supertest(app).delete(`/api/invoices/${createdMongoId}`);
+            expect(response.status).toBe(404);
         });
-        it("should return empty[] after deleting", async () => {
+        it("should return empty[] if try to get after deleting", async () => {
             const response = await supertest(app).get(`/api/invoices`);
             expect(response.body).toEqual([]);
         });

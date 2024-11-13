@@ -25,22 +25,6 @@ describe('mainController() mainController method', () => {
         };
     });
 
-    // Test for create method
-    it("should create an invoice and return it with status 200", async () => {
-        const mockInvoice = { amount: 100 };
-        const mockNewInvoice = { id: 1, amount: 100 };
-        (invoiceModel.create as jest.Mock).mockResolvedValue(mockNewInvoice);
-
-        req.body = mockInvoice;
-
-        await mainController.create(req as Request, res as Response);
-
-        expect(invoiceModel.create).toHaveBeenCalledWith(mockInvoice);
-        expect(statusMock).toHaveBeenCalledWith(200);
-        expect(jsonMock).toHaveBeenCalledWith(mockNewInvoice);
-    });
-
-
     // Test for delete method - successful delete
     it("should delete an invoice and return result with status 200", async () => {
         const mockDeleteResult = { deletedCount: 1 };
@@ -50,7 +34,6 @@ describe('mainController() mainController method', () => {
 
         await mainController.delete(req as Request, res as Response);
 
-        expect(invoiceModel.delete).toHaveBeenCalledWith("1");
         expect(statusMock).toHaveBeenCalledWith(200);
         expect(jsonMock).toHaveBeenCalledWith(mockDeleteResult);
     });

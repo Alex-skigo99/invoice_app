@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
 import { ZodError } from 'zod';
-import { CRUDError } from '../types/errors';
+import { ResourceNotExistError, ValidationError } from '../types/errors';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   if (err instanceof ZodError) {
@@ -14,7 +14,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     });
     return;
   };
-  if (err instanceof CRUDError) {
+  if (err instanceof ValidationError) {
     logger.error(err);
     res.status(400).json({
       title: err.name,
@@ -22,10 +22,16 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     });
     return;
   };
-
+  if (err instanceof ResourceNotExistError) {
+    logger.error(err);
+    res.status(404).json({
+      title: err.name,
+      detail: err.message,
+    });
+    return;
+  };
   logger.error(err); // Logging other errors
   res.status(500).json({
-    name: err.name || 'Internal Server Error',
-    detail: err.message || 'Internal Server Error'
+    title: 'Internal Server Error',
   });
 }

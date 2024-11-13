@@ -1,15 +1,15 @@
-import { calculateTotal, generateID, getTotal } from '../services/invoice_service';
 import { InvoiceRequest, Item } from '../types/invoice';
+import { calculateTotal, generateID, getTotal } from '../services/invoice_service';
 
 describe('generateID', () => {
     it('should generate an ID with 2 letters followed by 4 digits', () => {
-        const id = generateID();
+        const id = generateID.get();
         expect(id).toMatch(/^[A-Z]{2}\d{4}$/);
     });
 
     it('should generate unique IDs', () => {
-        const id1 = generateID();
-        const id2 = generateID();
+        const id1 = generateID.get();
+        const id2 = generateID.get();
         expect(id1).not.toBe(id2);
     });
 });
@@ -73,7 +73,7 @@ describe('calculateTotal', () => {
 });
 
 describe('getTotal', () => {
-    it('should return 0 for draft invoices', () => {
+    it('should return 0 for draft invoices without items', () => {
         const invoice: InvoiceRequest = {
             status: 'draft',
             items: []
@@ -82,7 +82,7 @@ describe('getTotal', () => {
         expect(total).toBe(0);
     });
 
-    it('should return 0 for draft invoices with items', () => {
+    it('should return SUM for draft invoices with items', () => {
         const invoice: InvoiceRequest = {
             status: 'draft',
             items: [
@@ -107,7 +107,7 @@ describe('getTotal', () => {
             ]
         };
         const total = getTotal(invoice);
-        expect(total).toBe(0);
+        expect(total).toBe(600);
     });
 
     it('should return total for pending invoices', () => {

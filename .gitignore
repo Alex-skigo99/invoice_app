@@ -139,3 +139,6 @@ dist
 # early
 /.early.*
 .early.coverage
+
+.DS_Store
+src/.DS_Store
