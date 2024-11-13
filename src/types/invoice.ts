@@ -15,7 +15,7 @@ export type Item = {
 };
 
 export interface Invoice {
-    // "_id"?: string;
+    "_id"?: string;
     "invoice_id": string;
     "createdAt"?: string,
     "paymentDue"?: string,

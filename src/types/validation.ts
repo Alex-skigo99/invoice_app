@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Status } from './invoice';
-import { CRUDError } from './errors';
+import { ValidationError } from './errors';
 
 // Status as a Zod Enum
 export const StatusSchema = z.enum(["paid", "pending", "draft"]);
@@ -39,15 +39,15 @@ export function isValidStatus(arg: any): arg is Status {
   return arg === "paid" || arg === "pending" || arg === "draft";
 };
 
-export function validateDraftInvoice(invoice: any) {
+function validateDraftInvoice(invoice: any) {
   InvoiceSchema.partial().required({status: true}).parse(invoice); // only status is required and the rest is optional
 };
 
-export function validatePaidInvoice(invoice: any) {
+function validatePaidInvoice(invoice: any) {
   InvoiceSchema.pick({status: true}).strict().parse(invoice); // only status is required
 };
 
-export function validatePendingInvoice(invoice: any) {
+function validatePendingInvoice(invoice: any) {
   InvoiceSchema.parse(invoice); // all fields are required
 };
 
@@ -61,7 +61,7 @@ export function validateCreateRequest(invoice: any) {
     return;
   };
   if (invoice.status === 'paid') {
-    throw new CRUDError('Cannot create an invoice with status "paid"');
+    throw new ValidationError('Cannot create an invoice with status "paid"');
   };
 };
 
