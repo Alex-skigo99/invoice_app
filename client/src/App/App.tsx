@@ -1,3 +1,4 @@
+import InvoiceList from '../components/invoiceList/InvoiceList';
 import Avatar from '../components/sidebar/Avatar';
 import Separator from '../components/sidebar/Separator';
 import Sidebar from '../components/sidebar/Sidebar';
@@ -13,6 +14,7 @@ function App() {
         <Separator />
         <Avatar />
       </Sidebar>
+      <InvoiceList />
     </>
   );
 }
