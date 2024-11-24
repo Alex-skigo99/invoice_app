@@ -1,0 +1,14 @@
+.select-elem {
+    width: 90px;
+    height: 30px;
+    /* font-family: var(--primary-font); */
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--text-color);
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid var(--text-color);
+    outline: none;
+    cursor: pointer;
+    margin-right: 20px;
+}
