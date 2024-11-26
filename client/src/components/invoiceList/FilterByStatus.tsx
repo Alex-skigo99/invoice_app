@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { InvoiceListContext } from './InvoiceList';
 import SelectElem from '../selectElem/SelectElem';
 
-const FilterByStatus: React.FC = () => {
+const FilterByStatus: React.FC<{label: string}> = ({label}) => {
     const context = useContext(InvoiceListContext);
     if (!context) {
         throw new Error('useInvoiceListContext must be used within an InvoiceListContext.Provider');
@@ -15,7 +15,7 @@ const FilterByStatus: React.FC = () => {
 
     return (
         <SelectElem 
-            label='Filter by status' 
+            label={label} 
             items={statusList} 
             curSelection={statusFilter} 
             onSelect={handleStatusChange}

@@ -1,6 +1,7 @@
 :root {
   --primary-color: rgb(105, 72, 248);
   --secondary-color: rgb(129, 101, 255);
+  --secondary-text-color: #6c757d;
   --success-color: #28a745;
   --info-color: #17a2b8;
   --warning-color: #ffc107;
@@ -12,11 +13,25 @@
 .dark-theme {
   --background-color: #141521;
   --primary-text-color: #fdfdfd;
+  --paid-text-color: #029b5b;
+  --pending-text-color: #ffac07;
+  --draft-text-color: #161616;
+  --paid-background-color: rgb(206, 245, 210);
+  --pending-background-color: rgb(246, 235, 205);
+  --draft-background-color: rgb(226, 227, 227);
+  --item-background-color: rgb(56, 59, 82);
 }
 
 .light-theme {
   --background-color: #f7f6fc;
   --primary-text-color: #000000;
+  --paid-text-color: #029b5b;
+  --pending-text-color: #ffac07;
+  --draft-text-color: #161616;
+  --paid-background-color: rgba(40, 167, 69, 0.1);
+  --pending-background-color: rgba(255, 193, 7, 0.1);
+  --draft-background-color: rgba(108, 117, 125, 0.1);
+  --item-background-color: #ffffff;
 }
 
 html {
@@ -45,15 +60,15 @@ body {
 
 @media screen and (max-width: 768px) {
   body {
-    max-width: 100%;
-    padding: var(--sidebar-width) 0;
+    /* width: 100%; */
+    padding: var(--sidebar-width) 1rem;
   }
 
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
   body {
-    padding: 0 0 0 var(--sidebar-width);
+    padding: 0 0 0 calc(var(--sidebar-width) + 1rem);
   }
 
 }

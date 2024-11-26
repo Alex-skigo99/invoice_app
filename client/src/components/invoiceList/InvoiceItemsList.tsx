@@ -1,11 +1,23 @@
 import React from 'react';
+import { InvoiceListContext } from './InvoiceList';
+import InvoiceItem from './InvoiceItem';
 
 const InvoiceItemsList: React.FC = () => {
+    const context = React.useContext(InvoiceListContext);
+    if (!context) {
+        throw new Error('useInvoiceListContext must be used within an InvoiceListContext.Provider');
+    }
+    const { invoices, statusFilter } = context;
+
     return (
-        <div>
-            <h1>Invoice Items List</h1>
-            {/* Add your component implementation here */}
-        </div>
+        <>
+            <h3>Invoice Items List</h3>
+            <div id='invoices-list'>
+                {invoices.filter(item => item.status === statusFilter || statusFilter === 'all').map(invoice => (
+                    <InvoiceItem key={invoice._id} {...invoice} />
+                ))}
+            </div>
+        </>
     );
 };
 

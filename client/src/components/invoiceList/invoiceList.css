@@ -9,4 +9,120 @@
         align-items: center;
         justify-content: flex-end;
     }
+
+    #invoice-list-title {
+        * {
+            margin: 0.9rem 0;
+        }
+    }
+}
+
+#invoices-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.invoice-item {
+    display: flex;
+    width: 95%;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px;
+
+    .invoice-id {
+        width: 15%;
+        font-weight: bold;
+
+        span {
+            color: var(--secondary-text-color);
+        }
+    }
+
+    .invoice-date {
+        width: 20%;
+        color: var(--secondary-text-color);
+    }
+
+    .invoice-client {
+        width: 25%;
+    }
+
+    .invoice-total {
+        width: 15%;
+        text-align: right;
+        font-weight: bold;
+    }
+
+    .invoice-status {
+        width: 15%;
+        border-radius: 5px;
+        height: 1.7rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        font-size: smaller;
+    }
+
+    .invoice-action {
+        width: 3%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+    }
+
+    .paid {
+        color: var(--paid-text-color);
+        background-color: var(--paid-background-color);
+    }
+
+    .pending {
+        color: var(--pending-text-color);
+        background-color: var(--pending-background-color);
+    }
+
+    .draft {
+        color: var(--draft-text-color);
+        background-color: var(--draft-background-color);
+    }
+}
+
+@media screen and (max-width: 768px) {
+
+    .invoice-item {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        background-color: var(--item-background-color);
+        border-radius: 10px;
+        margin-bottom: 10px;
+
+        .invoice-id {
+            width: 50%;
+        }
+
+        .invoice-date {
+            width: 50%;
+        }
+
+        .invoice-client {
+            width: 100%;
+        }
+
+        .invoice-total {
+            width: 45%;
+            text-align: left;
+            font-size: larger;
+        }
+
+        .invoice-status {
+            width: 30%;
+        }
+
+        .invoice-action {
+            width: 10%;
+        }
+    }
 }
